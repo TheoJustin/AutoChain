@@ -34,6 +34,26 @@
 						"internalType": "string",
 						"name": "email",
 						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "startPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "category",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "startDate",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "endDate",
+						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -68,6 +88,26 @@
 						"internalType": "string",
 						"name": "email",
 						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "startPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "category",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "startDate",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "endDate",
+						"type": "uint256"
 					}
 				],
 				"name": "createObject",
@@ -116,6 +156,21 @@
 						"internalType": "string",
 						"name": "name",
 						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "startPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "startDate",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "endDate",
+						"type": "uint256"
 					}
 				],
 				"name": "updateObject",
@@ -158,11 +213,11 @@
 	},
 	"sources": {
 		"backend/objects.sol": {
-			"keccak256": "0x0a697e4afe4650c71585446cb69df7927af15f6163ae07c4458a5d589e5547f8",
+			"keccak256": "0xb5974672b13e8f2ff204e846cb8142a5e1cc1107c614f6314b3a340a38a0ba6a",
 			"license": "UNLICENSED",
 			"urls": [
-				"bzz-raw://9ef135772a1af99865835ce32218ec84c1ae915f23c81516655bbf2cba31a600",
-				"dweb:/ipfs/QmVg9CvaYcRawSgE52YVVGwSGqFQqoMNGmyBDqPvFs5aFB"
+				"bzz-raw://173ae2df57ad88ea7dddd2523c966a244fa766f509f6922f91705679663c9fb7",
+				"dweb:/ipfs/QmSdkWpdpUd9EgdZfzJf3SKccAnnzRFP21hRPCvhzSGoV3"
 			]
 		}
 	},

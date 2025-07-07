@@ -6,6 +6,10 @@ contract DeAuctionObjects{
         string name; 
         string description;
         string email;
+        uint256 startPrice;
+        string category;
+        uint256 startDate;
+        uint256 endDate;
     }
 
     object[] public Objects;
@@ -15,18 +19,21 @@ contract DeAuctionObjects{
         TotalObjects = 0;
     }
 
-    function createObject (string memory name, string memory description, string memory email) public returns (uint256){
-        object memory newObject = object(name, description, email);
+    function createObject (string memory name, string memory description, string memory email, uint256 startPrice, string memory category, uint256 startDate, uint256 endDate) public returns (uint256){
+        object memory newObject = object(name, description, email, startPrice, category, startDate, endDate);
         Objects.push(newObject);
         TotalObjects++;
         return TotalObjects;
     }
 
-    function updateObject (string memory email, string memory description, string memory name) external returns(bool){
+    function updateObject (string memory email, string memory description, string memory name, uint256 startPrice,  uint256 startDate, uint256 endDate) external returns(bool){
         for(uint i = 0; i < TotalObjects; i++){
             if(compareStrings(Objects[i].email, email)){
                 Objects[i].name = name;
                 Objects[i].description = description;
+                Objects[i].startPrice = startPrice;
+                Objects[i].startDate = startDate;
+                Objects[i].endDate = endDate;
                 return true;
             }
         }
