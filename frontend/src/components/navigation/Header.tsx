@@ -1,66 +1,66 @@
 import { Button } from "@/components/ui/button";
-import { Gavel, Wallet } from "lucide-react";
+import { Wallet } from "lucide-react";
 import Link from "next/link";
+import { Car } from "lucide-react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 function Header() {
   return (
-    <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-      <div className="container mx-auto px-4 lg:px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-            <Gavel className="h-5 w-5 text-white" />
+    <nav className="border-b border-gray-100 bg-white/95 backdrop-blur-sm sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <Link href="/" className="flex items-center space-x-2">
+            <Car className="h-8 w-8 text-orange-500" />
+            <span className="text-2xl font-bold text-gray-800">AutoChain</span>
+          </Link>
+          <div className="hidden md:flex items-center space-x-8">
+            <Link
+              href="/cars"
+              className="text-gray-600 hover:text-orange-500 transition-colors"
+            >
+              Cars
+            </Link>
+            <Link
+              href="/dashboard"
+              className="text-gray-600 hover:text-orange-500 transition-colors"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/wallet"
+              className="text-gray-600 hover:text-orange-500 transition-colors"
+            >
+              Wallet
+            </Link>
+            <Link
+              href="/contact"
+              className="text-gray-600 hover:text-orange-500 transition-colors"
+            >
+              Contact
+            </Link>
           </div>
-          <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-            DeAuction
-          </span>
-        </div>
-
-        <nav className="hidden md:flex items-center space-x-8">
-          <Link
-            href="#"
-            className="text-sm font-medium hover:text-purple-600 transition-colors"
-          >
-            Auctions
-          </Link>
-          <Link
-            href="#"
-            className="text-sm font-medium hover:text-purple-600 transition-colors"
-          >
-            Create
-          </Link>
-          <Link
-            href="#"
-            className="text-sm font-medium hover:text-purple-600 transition-colors"
-          >
-            How it Works
-          </Link>
-          <Link
-            href="#"
-            className="text-sm font-medium hover:text-purple-600 transition-colors"
-          >
-            About
-          </Link>
-        </nav>
-
-        <div className="flex items-center space-x-4">
-          <ConnectButton
-            label="Connect Wallet"
-            accountStatus={{
-              smallScreen: "avatar",
-              largeScreen: "full",
-            }}
-            showBalance={{
-              smallScreen: false,
-              largeScreen: true,
-            }}
-          />
-          <Button className="ml-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-            Launch App
-          </Button>
+          <div className="flex items-center space-x-4">
+            <ConnectButton
+              label="Connect Wallet"
+              accountStatus={{
+                smallScreen: "avatar",
+                largeScreen: "full",
+              }}
+              showBalance={{
+                smallScreen: false,
+                largeScreen: true,
+              }}
+            />
+            <Button
+              variant="outline"
+              className="ml-6 border-gray-300 text-gray-700 hover:bg-gray-50 bg-transparent"
+            >
+              Sign In
+            </Button>
+          </div>
         </div>
       </div>
-    </header>
+    </nav>
   );
 }
 
