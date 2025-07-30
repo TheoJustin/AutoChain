@@ -6,7 +6,7 @@ from recommendation.scripts.app import CarRecommender
 app = Flask(__name__)
 CORS(app)
 
-TEMP_DIR = "temp_uploads"
+TEMP_DIR = "./yolov11/temp_uploads"
 if not os.path.exists(TEMP_DIR):
     os.makedirs(TEMP_DIR)
     
