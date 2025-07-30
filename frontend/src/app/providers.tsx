@@ -21,7 +21,9 @@ export function Providers(props: {
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider>
           <Header />
-          {props.children}
+            <section data-scroll data-scroll-speed="0.5" className="min-h-screen bg-white">
+              {props.children}
+            </section>
           <Footer />
         </RainbowKitProvider>
       </QueryClientProvider>

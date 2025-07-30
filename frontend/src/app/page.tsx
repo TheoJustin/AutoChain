@@ -20,7 +20,7 @@ function App() {
 
   return (
     <>
-      <main data-scroll data-scroll-speed="0.5" className="min-h-screen bg-white">
+      <main>
         <Hero />
         <AIFeatures />
         <MainFeatures />
