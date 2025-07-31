@@ -4,108 +4,9 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Car, MapPin, Star, Filter, Heart, ArrowRight } from "lucide-react"
 import Link from "next/link"
-
-const cars = [
-  {
-    id: 1,
-    name: "Tesla Model 3",
-    manufacturer: "Tesla",
-    year: 2023,
-    type: "Sedan",
-    fuel: "Electric",
-    transmission: "Automatic",
-    condition: "Excellent",
-    price: 89,
-    rating: 4.9,
-    reviews: 127,
-    location: "Downtown",
-    image: "/placeholder.svg?height=200&width=300",
-    features: ["Autopilot", "Supercharging", "Premium Interior"],
-    recommended: true,
-  },
-  {
-    id: 2,
-    name: "BMW X5",
-    manufacturer: "BMW",
-    year: 2022,
-    type: "SUV",
-    fuel: "Gasoline",
-    transmission: "Automatic",
-    condition: "Excellent",
-    price: 125,
-    rating: 4.8,
-    reviews: 89,
-    location: "Airport",
-    image: "/placeholder.svg?height=200&width=300",
-    features: ["All-Wheel Drive", "Leather Seats", "Navigation"],
-    recommended: true,
-  },
-  {
-    id: 3,
-    name: "Toyota Camry",
-    manufacturer: "Toyota",
-    year: 2023,
-    type: "Sedan",
-    fuel: "Hybrid",
-    transmission: "Automatic",
-    condition: "Good",
-    price: 65,
-    rating: 4.7,
-    reviews: 203,
-    location: "City Center",
-    image: "/placeholder.svg?height=200&width=300",
-    features: ["Hybrid Engine", "Safety Sense", "Apple CarPlay"],
-  },
-  {
-    id: 4,
-    name: "Ford Mustang",
-    manufacturer: "Ford",
-    year: 2022,
-    type: "Coupe",
-    fuel: "Gasoline",
-    transmission: "Manual",
-    condition: "Good",
-    price: 95,
-    rating: 4.6,
-    reviews: 156,
-    location: "Marina",
-    image: "/placeholder.svg?height=200&width=300",
-    features: ["V8 Engine", "Sport Mode", "Premium Audio"],
-  },
-  {
-    id: 5,
-    name: "Honda CR-V",
-    manufacturer: "Honda",
-    year: 2023,
-    type: "SUV",
-    fuel: "Gasoline",
-    transmission: "Automatic",
-    condition: "Excellent",
-    price: 75,
-    rating: 4.8,
-    reviews: 178,
-    location: "Suburbs",
-    image: "/placeholder.svg?height=200&width=300",
-    features: ["All-Wheel Drive", "Honda Sensing", "Spacious Interior"],
-    recommended: true,
-  },
-  {
-    id: 6,
-    name: "Audi A4",
-    manufacturer: "Audi",
-    year: 2022,
-    type: "Sedan",
-    fuel: "Gasoline",
-    transmission: "Automatic",
-    condition: "Good",
-    price: 85,
-    rating: 4.7,
-    reviews: 92,
-    location: "Business District",
-    image: "/placeholder.svg?height=200&width=300",
-    features: ["Quattro AWD", "Virtual Cockpit", "Premium Sound"],
-  },
-]
+import { cars } from "@/data/cars"
+import imgLink from "@/assets/cars/placeholder.jpg"
+import Image from "next/image"
 
 export default function CarsPage() {
   const recommendedCars = cars.filter((car) => car.recommended)
@@ -113,7 +14,7 @@ export default function CarsPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-12">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Find Your Perfect Car</h1>
@@ -190,9 +91,17 @@ export default function CarsPage() {
                 </SelectContent>
               </Select>
 
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600 whitespace-nowrap">Price: $50-150</span>
-              </div>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Price" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2023">10$ - 50$</SelectItem>
+                  <SelectItem value="2022">50$ - 100$</SelectItem>
+                  <SelectItem value="2021">100$ - 300$</SelectItem>
+                  <SelectItem value="2020">300$ - 500$</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
@@ -214,8 +123,8 @@ export default function CarsPage() {
                 className="pb-5 group hover:shadow-xl transition-all duration-300 border-orange-200 bg-gradient-to-br from-orange-50 to-white"
               >
                 <div className="relative">
-                  <img
-                    src={car.image || "/placeholder.svg"}
+                  <Image
+                    src={imgLink || "/placeholder.svg"}
                     alt={car.name}
                     className="w-full h-48 object-cover rounded-t-lg"
                   />
@@ -284,8 +193,8 @@ export default function CarsPage() {
             {allCars.map((car) => (
               <Card key={car.id} className="pb-5 group hover:shadow-lg transition-all duration-300">
                 <div className="relative">
-                  <img
-                    src={car.image || "/placeholder.svg"}
+                  <Image
+                    src={imgLink || "/placeholder.svg"}
                     alt={car.name}
                     className="w-full h-48 object-cover rounded-t-lg"
                   />

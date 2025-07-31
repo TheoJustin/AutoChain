@@ -1,10 +1,32 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Car, MapPin, Star, Calendar, ArrowLeft, Heart, Share, Shield, CheckCircle } from "lucide-react"
-import Link from "next/link"
+"use client";
+
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Car,
+  MapPin,
+  Star,
+  Calendar,
+  ArrowLeft,
+  Heart,
+  Share,
+  Shield,
+  CheckCircle,
+} from "lucide-react";
+import Link from "next/link";
+import imgLink from "@/assets/cars/placeholder.jpg";
+import Image from "next/image";
+import { getRecommendationsById } from "@/services/car.service";
+import { useEffect, useState } from "react";
 
 const carDetails = {
   id: 1,
@@ -53,8 +75,13 @@ const carDetails = {
   },
   description:
     "Experience the future of driving with this pristine Tesla Model 3. This vehicle combines cutting-edge technology with exceptional performance and efficiency. Perfect for city commuting or weekend getaways.",
-  rules: ["No smoking", "No pets", "Return with same fuel level", "Maximum 200 miles per day"],
-}
+  rules: [
+    "No smoking",
+    "No pets",
+    "Return with same fuel level",
+    "Maximum 200 miles per day",
+  ],
+};
 
 const similarCars = [
   {
@@ -81,7 +108,7 @@ const similarCars = [
     rating: 4.6,
     image: "/placeholder.svg?height=150&width=200",
   },
-]
+];
 
 const reviews = [
   {
@@ -111,14 +138,81 @@ const reviews = [
       "Great experience overall. The car drives smoothly and the tech features are impressive. Will definitely rent again.",
     avatar: "/placeholder.svg?height=32&width=32",
   },
-]
+];
+
+interface Car {
+  id: number;
+  name: string;
+  manufacturer: string;
+  year: string;
+  type: string;
+  fuel: string;
+  transmission: string;
+  condition: string;
+  price: number;
+  image_url: string;
+  lat: number;
+  long: number;
+  features: string;
+  price_range: string;
+  location?: string;
+  rating?: number;
+  reviews?: number;
+  recommended?: boolean;
+}
 
 export default function CarDetailPage() {
+  // const [similarCars, setSimilarCars] = useState<Car[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // useEffect(() => {
+  //   if (!params.carId) return;
+
+  //   const fetchSimilarCars = async () => {
+  //     try {
+  //       setIsLoading(true);
+  //       setError(null);
+
+  //       const recommendations = await getRecommendationsById(params.carId);
+
+  //       const formattedCars = recommendations.map(car => ({
+  //         id: car.id,
+  //         name: car.name,
+  //         manufacturer: car.manufacturer,
+  //         year: car.year,
+  //         type: car.type,
+  //         fuel: car.fuel,
+  //         transmission: car.transmission,
+  //         condition: car.condition,
+  //         price: car.price,
+  //         image_url: car.image_url,
+  //         lat: car.lat,
+  //         long: car.long,
+  //         features: car.features,
+  //         price_range: car.price_range,
+  //       }));
+
+  //       setSimilarCars(formattedCars);
+  //     } catch (err) {
+  //       setError("Failed to load recommendations. Please try again later.");
+  //       console.error(err);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  //   fetchSimilarCars();
+  // }, [params.carId]);
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <Link href="/cars" className="inline-flex items-center text-gray-600 hover:text-orange-500 mb-6">
+        <Link
+          href="/cars"
+          className="inline-flex items-center text-gray-600 hover:text-orange-500 mb-6"
+        >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Cars
         </Link>
@@ -129,19 +223,29 @@ export default function CarDetailPage() {
             {/* Image Gallery */}
             <div className="mb-8">
               <div className="relative mb-4">
-                <img
-                  src={carDetails.images[0] || "/placeholder.svg"}
+                <Image
+                  src={imgLink || "/placeholder.svg"}
                   alt={carDetails.name}
                   className="w-full h-96 object-cover rounded-xl"
                 />
                 <div className="absolute top-4 left-4">
-                  <Badge className="bg-orange-500 text-white">🤖 AI Recommended</Badge>
+                  <Badge className="bg-orange-500 text-white">
+                    🤖 AI Recommended
+                  </Badge>
                 </div>
                 <div className="absolute top-4 right-4 flex space-x-2">
-                  <Button size="sm" variant="ghost" className="bg-white/80 hover:bg-white">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="bg-white/80 hover:bg-white"
+                  >
                     <Heart className="h-4 w-4" />
                   </Button>
-                  <Button size="sm" variant="ghost" className="bg-white/80 hover:bg-white">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="bg-white/80 hover:bg-white"
+                  >
                     <Share className="h-4 w-4" />
                   </Button>
                 </div>
@@ -149,9 +253,9 @@ export default function CarDetailPage() {
 
               <div className="grid grid-cols-4 gap-2">
                 {carDetails.images.slice(1).map((image, index) => (
-                  <img
+                  <Image
                     key={index}
-                    src={image || "/placeholder.svg"}
+                    src={imgLink || "/placeholder.svg"}
                     alt={`${carDetails.name} view ${index + 2}`}
                     className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
                   />
@@ -163,7 +267,9 @@ export default function CarDetailPage() {
             <div className="mb-8">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-800 mb-2">{carDetails.name}</h1>
+                  <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                    {carDetails.name}
+                  </h1>
                   <div className="flex items-center space-x-4 text-gray-600">
                     <span>{carDetails.year}</span>
                     <span>•</span>
@@ -175,7 +281,9 @@ export default function CarDetailPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-3xl font-bold text-orange-500">${carDetails.price}</div>
+                  <div className="text-3xl font-bold text-orange-500">
+                    ${carDetails.price}
+                  </div>
                   <div className="text-gray-500">per day</div>
                 </div>
               </div>
@@ -183,8 +291,12 @@ export default function CarDetailPage() {
               <div className="flex items-center space-x-4 mb-6">
                 <div className="flex items-center space-x-1">
                   <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                  <span className="font-medium text-gray-800">{carDetails.rating}</span>
-                  <span className="text-gray-500">({carDetails.reviews} reviews)</span>
+                  <span className="font-medium text-gray-800">
+                    {carDetails.rating}
+                  </span>
+                  <span className="text-gray-500">
+                    ({carDetails.reviews} reviews)
+                  </span>
                 </div>
                 <div className="flex items-center text-gray-500">
                   <MapPin className="h-4 w-4 mr-1" />
@@ -196,10 +308,16 @@ export default function CarDetailPage() {
 
               {/* Features */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">Features</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                  Features
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {carDetails.features.map((feature, index) => (
-                    <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-700">
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="bg-gray-100 text-gray-700"
+                    >
                       <CheckCircle className="h-3 w-3 mr-1" />
                       {feature}
                     </Badge>
@@ -209,14 +327,25 @@ export default function CarDetailPage() {
 
               {/* Specifications */}
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">Specifications</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                  Specifications
+                </h3>
                 <div className="grid md:grid-cols-2 gap-4">
-                  {Object.entries(carDetails.specifications).map(([key, value]) => (
-                    <div key={key} className="flex justify-between py-2 border-b border-gray-100">
-                      <span className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, " $1")}</span>
-                      <span className="font-medium text-gray-800">{value}</span>
-                    </div>
-                  ))}
+                  {Object.entries(carDetails.specifications).map(
+                    ([key, value]) => (
+                      <div
+                        key={key}
+                        className="flex justify-between py-2 border-b border-gray-100"
+                      >
+                        <span className="text-gray-600 capitalize">
+                          {key.replace(/([A-Z])/g, " $1")}
+                        </span>
+                        <span className="font-medium text-gray-800">
+                          {value}
+                        </span>
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
 
@@ -228,20 +357,28 @@ export default function CarDetailPage() {
                 <CardContent>
                   <div className="flex items-center space-x-4">
                     <Avatar className="h-12 w-12">
-                      <AvatarImage src={carDetails.owner.avatar || "/placeholder.svg"} />
+                      <AvatarImage
+                        src={carDetails.owner.avatar || "/placeholder.svg"}
+                      />
                       <AvatarFallback>SJ</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-800">{carDetails.owner.name}</h4>
+                      <h4 className="font-semibold text-gray-800">
+                        {carDetails.owner.name}
+                      </h4>
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
                         <div className="flex items-center">
                           <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                          {carDetails.owner.rating} ({carDetails.owner.reviews} reviews)
+                          {carDetails.owner.rating} ({carDetails.owner.reviews}{" "}
+                          reviews)
                         </div>
                         <span>Joined {carDetails.owner.joinDate}</span>
                       </div>
                     </div>
-                    <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-transparent">
+                    <Button
+                      variant="outline"
+                      className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-transparent"
+                    >
                       Contact Owner
                     </Button>
                   </div>
@@ -256,7 +393,10 @@ export default function CarDetailPage() {
                 <CardContent>
                   <ul className="space-y-2">
                     {carDetails.rules.map((rule, index) => (
-                      <li key={index} className="flex items-center text-gray-600">
+                      <li
+                        key={index}
+                        className="flex items-center text-gray-600"
+                      >
                         <Shield className="h-4 w-4 mr-2 text-orange-500" />
                         {rule}
                       </li>
@@ -267,14 +407,18 @@ export default function CarDetailPage() {
 
               {/* Reviews */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Reviews ({reviews.length})</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  Reviews ({reviews.length})
+                </h3>
                 <div className="space-y-4">
                   {reviews.map((review) => (
                     <Card key={review.id} className="pb-4">
                       <CardContent className="pt-4">
                         <div className="flex items-start space-x-3">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={review.avatar || "/placeholder.svg"} />
+                            <AvatarImage
+                              src={review.avatar || "/placeholder.svg"}
+                            />
                             <AvatarFallback>
                               {review.user
                                 .split(" ")
@@ -284,8 +428,12 @@ export default function CarDetailPage() {
                           </Avatar>
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
-                              <h5 className="font-medium text-gray-800">{review.user}</h5>
-                              <span className="text-sm text-gray-500">{review.date}</span>
+                              <h5 className="font-medium text-gray-800">
+                                {review.user}
+                              </h5>
+                              <span className="text-sm text-gray-500">
+                                {review.date}
+                              </span>
                             </div>
                             <div className="flex items-center mb-2">
                               {[...Array(5)].map((_, i) => (
@@ -308,7 +456,7 @@ export default function CarDetailPage() {
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24 mb-8 py-5">
+            <div className="sticky top-24 mb-8">
               <Card className="py-5 mb-8">
                 <CardHeader>
                   <CardTitle className="text-gray-800">Book This Car</CardTitle>
@@ -316,15 +464,25 @@ export default function CarDetailPage() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">Pick-up Date</label>
-                      <Button variant="outline" className="w-full justify-start text-left font-normal bg-transparent">
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        Pick-up Date
+                      </label>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal bg-transparent"
+                      >
                         <Calendar className="mr-2 h-4 w-4" />
                         Select date
                       </Button>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">Return Date</label>
-                      <Button variant="outline" className="w-full justify-start text-left font-normal bg-transparent">
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        Return Date
+                      </label>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal bg-transparent"
+                      >
                         <Calendar className="mr-2 h-4 w-4" />
                         Select date
                       </Button>
@@ -349,34 +507,48 @@ export default function CarDetailPage() {
                     <Separator />
                     <div className="flex justify-between text-lg font-semibold">
                       <span>Total</span>
-                      <span className="text-orange-500">${carDetails.price + 40}</span>
+                      <span className="text-orange-500">
+                        ${carDetails.price + 40}
+                      </span>
                     </div>
                   </div>
 
-                  <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">Book Now</Button>
+                  <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+                    Book Now
+                  </Button>
 
-                  <div className="text-center text-sm text-gray-500">Free cancellation up to 24 hours before pickup</div>
+                  <div className="text-center text-sm text-gray-500">
+                    Free cancellation up to 24 hours before pickup
+                  </div>
                 </CardContent>
               </Card>
-              
+
               <Card className="py-5">
                 <CardHeader>
-                  <CardTitle className="text-gray-800">🤖 Similar AI Recommendations</CardTitle>
-                  <CardDescription>Based on this car's features</CardDescription>
+                  <CardTitle className="text-gray-800">
+                    Similar AI Recommendations
+                  </CardTitle>
+                  <CardDescription>
+                    Based on this car's features
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {similarCars.map((car) => (
                     <Link key={car.id} href={`/cars/${car.id}`}>
                       <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                        <img
-                          src={car.image || "/placeholder.svg"}
+                        <Image
+                          src={imgLink || "/placeholder.svg"}
                           alt={car.name}
                           className="w-16 h-12 object-cover rounded"
                         />
                         <div className="flex-1">
-                          <h4 className="font-medium text-gray-800">{car.name}</h4>
+                          <h4 className="font-medium text-gray-800">
+                            {car.name}
+                          </h4>
                           <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600">{car.year}</span>
+                            <span className="text-sm text-gray-600">
+                              {car.year}
+                            </span>
                             <div className="flex items-center">
                               <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
                               <span className="text-sm">{car.rating}</span>
@@ -384,7 +556,9 @@ export default function CarDetailPage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold text-orange-500">${car.price}</div>
+                          <div className="font-semibold text-orange-500">
+                            ${car.price}
+                          </div>
                           <div className="text-xs text-gray-500">per day</div>
                         </div>
                       </div>
@@ -397,5 +571,5 @@ export default function CarDetailPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
