@@ -1,59 +1,47 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-contract DeAuctionObjects{
-    struct object{
-        string name; 
-        string description;
-        string email;
-        uint256 startPrice;
-        string category;
-        uint256 startDate;
-        uint256 endDate;
+contract TransactionObjects{
+   struct CarRentalTransaction {
+        uint256 transactionId;   
+        uint256 carId;           
+        string renterName;       
+        string renterEmail;      
+        string renterProviderName;
+        string renterProviderEmail;
+        uint256 startDate;       
+        uint256 endDate;         
+        uint256 totalPrice;  
     }
 
-    object[] public Objects;
-    uint256 public TotalObjects; 
+    CarRentalTransaction[] public transactionObjects;
+
+    uint256 public totalTransactionObjects; 
 
     constructor(){
-        TotalObjects = 0;
+        totalTransactionObjects = 0;
     }
 
-    function createObject (string memory name, string memory description, string memory email, uint256 startPrice, string memory category, uint256 startDate, uint256 endDate) public returns (uint256){
-        object memory newObject = object(name, description, email, startPrice, category, startDate, endDate);
-        Objects.push(newObject);
-        TotalObjects++;
-        return TotalObjects;
+    function createTransactionObject (
+        uint256 carId,           
+        string memory renterName,       
+        string memory renterEmail,  
+        string memory renterProviderName,
+        string memory renterProviderEmail,    
+        uint256 startDate,       
+        uint256 endDate,         
+        uint256 totalPrice  
+    ) public returns (uint256){
+        CarRentalTransaction memory newObject = 
+        CarRentalTransaction({transactionId:totalTransactionObjects, carId:carId, renterName:renterName, renterEmail:renterEmail, renterProviderName: renterProviderName, renterProviderEmail:renterProviderEmail,startDate:startDate, endDate:endDate, totalPrice:totalPrice});
+        transactionObjects.push(newObject);
+        totalTransactionObjects++;
+        return totalTransactionObjects;
     }
 
-    function updateObject (string memory email, string memory description, string memory name, uint256 startPrice,  uint256 startDate, uint256 endDate) external returns(bool){
-        for(uint i = 0; i < TotalObjects; i++){
-            if(compareStrings(Objects[i].email, email)){
-                Objects[i].name = name;
-                Objects[i].description = description;
-                Objects[i].startPrice = startPrice;
-                Objects[i].startDate = startDate;
-                Objects[i].endDate = endDate;
-                return true;
-            }
-        }
-        return false;
+    function getAllTransactions() public view returns (CarRentalTransaction[] memory){
+        return transactionObjects;
     }
-
-    function delObject(string memory email)external returns(bool){
-        assert(TotalObjects > 0);
-        for(uint i = 0 ; i < TotalObjects; i++){
-            if(compareStrings(Objects[i].email, email)){
-                Objects[i] = Objects[TotalObjects - 1];
-                delete Objects[TotalObjects - 1];
-                TotalObjects--;
-                return true;
-            }
-
-        }
-        return false;
-    }
-
     
     // Helper functions
     function compareStrings(string memory a, string memory b) internal pure returns (bool) {
