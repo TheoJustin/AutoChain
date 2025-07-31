@@ -23,15 +23,14 @@ function Hero() {
     }
 
     const handleResize = () => {
-      // Tailwind's 'lg' breakpoint is 1024px
       setIsLargeScreen(window.innerWidth >= 1024)
     }
 
     window.addEventListener("scroll", handleScroll, { passive: true })
     window.addEventListener("resize", handleResize)
 
-    handleScroll() // Initial call
-    handleResize() // Initial call
+    handleScroll() 
+    handleResize() 
 
     return () => {
       window.removeEventListener("scroll", handleScroll)
@@ -41,7 +40,7 @@ function Hero() {
   
   const textOpacity = isLargeScreen ? 1 - scrollY * 1.5 : 1 
   const textTransform = isLargeScreen ? `translateX(${-scrollY * 100}px) translateY(${scrollY * 50}px)` : "none"
-  const imageTransform = isLargeScreen ? `translateX(${-scrollY * 300}px) scale(${1 + scrollY * 0.1})` : "none"
+  const imageTransform = isLargeScreen ? `translateX(${-scrollY * 800}px) scale(${1 + scrollY * 0.1})` : "none"
 
   return (
     <section ref={sectionRef} className="relative py-20 lg:py-32 overflow-hidden">
