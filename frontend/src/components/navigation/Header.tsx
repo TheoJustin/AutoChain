@@ -33,12 +33,6 @@ function Header() {
               Dashboard
             </Link>
             <Link
-              href="/wallet"
-              className="text-gray-600 hover:text-orange-500 transition-colors"
-            >
-              Wallet
-            </Link>
-            <Link
               href="/contact"
               className="text-gray-600 hover:text-orange-500 transition-colors"
             >
