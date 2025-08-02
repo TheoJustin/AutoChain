@@ -11,6 +11,9 @@ import imgLink from "@/assets/cars/placeholder.jpg"
 import Image from "next/image"
 import { getRecommendationsByFeatures } from "@/services/car.service"
 import { useEffect, useState } from "react"
+import { MintCarModal } from '@/components/MintCarModal'
+import { useMintedCars } from '@/hooks/useMintedCars'
+import { useAccount } from 'wagmi'
 
 interface AICar {
   id: number;
@@ -43,6 +46,8 @@ export default function CarsPage() {
     year: '',
     price_range: ''
   });
+  const { isConnected } = useAccount();
+  const { mintedCars } = useMintedCars();
   
   const recommendedCars = cars.filter((car) => car.recommended)
   const allCars = cars
@@ -92,13 +97,20 @@ export default function CarsPage() {
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-12">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Find Your Perfect Car
-          </h1>
-          <p className="text-gray-600">
-            AI-powered recommendations based on your preferences
-          </p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              Find Your Perfect Car
+            </h1>
+            <p className="text-gray-600">
+              AI-powered recommendations based on your preferences
+            </p>
+          </div>
+          <MintCarModal>
+            <Button className="bg-blue-500 hover:bg-blue-600 text-white">
+              {isConnected ? 'Mint Car NFT' : 'Connect to Mint'}
+            </Button>
+          </MintCarModal>
         </div>
 
         {/* Filters */}
@@ -392,6 +404,105 @@ export default function CarsPage() {
             )}
           </div>
         </section>
+
+        {/* My Minted Cars */}
+        {mintedCars.length > 0 && (
+          <section className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                  My Minted Cars
+                </h2>
+                <p className="text-gray-600">Cars you've minted as NFTs</p>
+              </div>
+              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                NFT Collection
+              </Badge>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {mintedCars.map((car) => (
+                <Card
+                  key={car.tokenId}
+                  className="pb-5 group hover:shadow-xl transition-all duration-300 border-blue-200 bg-gradient-to-br from-blue-50 to-white"
+                >
+                  <div className="relative">
+                    <Image
+                      src={imgLink || '/placeholder.svg'}
+                      alt={car.name}
+                      className="w-full h-48 object-cover rounded-t-lg"
+                    />
+                    <Badge className="absolute top-3 left-3 bg-blue-500 text-white">
+                      🏆 My NFT
+                    </Badge>
+                    <Badge className="absolute top-3 right-3 bg-green-500 text-white text-xs">
+                      Token #{car.tokenId}
+                    </Badge>
+                  </div>
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start gap-3 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-lg font-bold text-gray-800 mb-1 truncate">
+                          {car.name}
+                        </CardTitle>
+                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-2 flex-wrap">
+                          <Badge variant="outline" className="text-xs shrink-0">
+                            {car.manufacturer}
+                          </Badge>
+                          <span className="shrink-0">{car.year}</span>
+                          <span className="shrink-0">•</span>
+                          <span className="shrink-0">{car.type}</span>
+                        </div>
+                        <div className="flex items-center space-x-1 mb-2">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 shrink-0" />
+                          <span className="font-medium text-gray-800">
+                            {car.rating}
+                          </span>
+                          <span className="text-gray-500 text-sm truncate">
+                            ({car.reviews} reviews)
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-xl font-bold text-blue-500">
+                          ${car.price}
+                        </div>
+                        <div className="text-sm text-gray-500">per day</div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center text-gray-500 mb-3">
+                      <MapPin className="h-4 w-4 mr-1" />
+                      <span className="text-sm">{car.location}</span>
+                      <span className="mx-2">•</span>
+                      <span className="text-sm">{car.fuel}</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {car.features.slice(0, 3).map((feature, index) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="text-xs bg-blue-100 text-blue-700 border-blue-200 break-words max-w-64 whitespace-normal"
+                        >
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    <Link href={`/cars/${car.id}`}>
+                      <Button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md">
+                        View Details
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* All Available Cars */}
         <section>
