@@ -13,6 +13,7 @@ import { useRentalHistory } from '@/hooks/useRentalHistory'
 import { useMintedCars } from '@/hooks/useMintedCars'
 import { useOwnerCars } from '@/hooks/useOwnerCars'
 import { useOwnerBookings } from '@/hooks/useOwnerBookings'
+import { RentalDetailsModal } from '@/components/RentalDetailsModal'
 import { useAccount } from 'wagmi'
 
 const renterData = {
@@ -334,6 +335,18 @@ export default function DashboardPage() {
                             <span className="text-sm text-gray-600">{car.bookings} bookings</span>
                             <span className="text-sm text-gray-600">Token #{car.tokenId}</span>
                           </div>
+                          {car.status === 'rented' && car.currentRenter && (
+                            <div className="mt-2 p-2 bg-orange-50 rounded border border-orange-200">
+                              <p className="text-sm text-orange-700">
+                                <strong>Rented by:</strong> {car.currentRenter}
+                              </p>
+                              {car.rentalEndDate && (
+                                <p className="text-xs text-orange-600">
+                                  Until: {new Date(car.rentalEndDate).toLocaleDateString()}
+                                </p>
+                              )}
+                            </div>
+                          )}
                         </div>
                         <div className="text-center">
                           <div className="font-semibold text-green-600">{car.earnings.toFixed(3)} ETH</div>
@@ -344,20 +357,28 @@ export default function DashboardPage() {
                             className={
                               car.status === "available"
                                 ? "bg-green-100 text-green-800 hover:bg-green-100"
-                                : "bg-orange-100 text-orange-800 hover:bg-orange-100"
+                                : "bg-red-100 text-red-800 hover:bg-red-100"
                             }
                           >
                             {car.status === "available" ? "Available" : "Rented"}
                           </Badge>
                         </div>
                         <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="outline" size="sm">
+                          <RentalDetailsModal 
+                            carName={car.name}
+                            currentRenter={car.currentRenter}
+                            rentalEndDate={car.rentalEndDate}
+                            earnings={car.earnings}
+                            bookings={car.bookings}
+                          >
+                            <Button variant="outline" size="sm" title="View Rental Details">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </RentalDetailsModal>
+                          <Button variant="outline" size="sm" title="Edit Car">
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 bg-transparent">
+                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 bg-transparent" title="Remove Car">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
