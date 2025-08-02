@@ -29,28 +29,42 @@ interface RecommendationFeatures {
   max_distance_km?: number;
 }
 
-export const getRecommendationsById = async (
-  carId: number | string
-): Promise<Car[]> => {
+export const getRecommendationsById = async (carId: number | string): Promise<Car[]> => {
   try {
-    console.log(
-      `fetching recommendations from: ${process.env.NEXT_PUBLIC_MODEL_API_URL}/recommend/${carId}`
-    );
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_MODEL_API_URL}/recommend/${carId}`
-    );
+    const response = await fetch(`${process.env.NEXT_PUBLIC_MODEL_API_URL}/recommend/${carId}`);
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(
-        errorData.error || `HTTP error! status: ${response.status}`
-      );
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
     }
 
     const data: { recommendations: Car[] } = await response.json();
     return data.recommendations || [];
   } catch (error) {
-    console.error("Failed to fetch recommendations by ID:", error);
+    console.error('Failed to fetch recommendations by ID:', error);
+    throw error;
+  }
+};
+
+export const getRecommendationsByFeatures = async (features: RecommendationFeatures): Promise<Car[]> => {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_MODEL_API_URL}/recommend/by-features`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(features),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+
+    const data: { recommendations: Car[] } = await response.json();
+    return data.recommendations || [];
+  } catch (error) {
+    console.error('Failed to fetch recommendations by features:', error);
     throw error;
   }
 };

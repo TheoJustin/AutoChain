@@ -28,6 +28,12 @@ import Image from "next/image";
 import { getRecommendationsById } from "@/services/car.service";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { RentCarModal } from '@/components/RentCarModal';
+import { useCarMetadata, useCarPrice } from '@/hooks/useCarNFT';
+import { useMintedCars } from '@/hooks/useMintedCars';
+import { useAccount } from 'wagmi';
+import { formatEther } from 'viem';
+import { cars } from '@/data/cars';
 
 const carDetails = {
   id: 1,
@@ -167,6 +173,10 @@ export default function CarDetailPage() {
   const [similarCars, setSimilarCars] = useState<Car[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isConnected } = useAccount();
+  const carId = parseInt(params?.id || '0');
+  const { data: carMetadata } = useCarMetadata(carId);
+  const { data: pricePerDay } = useCarPrice(carId);
 
   useEffect(() => {
     if (!params.id) {
@@ -289,7 +299,7 @@ export default function CarDetailPage() {
                 </div>
                 <div className="text-right">
                   <div className="text-3xl font-bold text-orange-500">
-                    ${carDetails.price}
+                    {pricePerDay ? `${formatEther(BigInt(pricePerDay))} ETH` : `$${carDetails.price}`}
                   </div>
                   <div className="text-gray-500">per day</div>
                 </div>
@@ -520,9 +530,11 @@ export default function CarDetailPage() {
                     </div>
                   </div>
 
-                  <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-                    Book Now
-                  </Button>
+                  <RentCarModal carId={carId} carName={carDetails.name}>
+                    <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+                      {isConnected ? 'Rent with Crypto' : 'Connect Wallet to Rent'}
+                    </Button>
+                  </RentCarModal>
 
                   <div className="text-center text-sm text-gray-500">
                     Free cancellation up to 24 hours before pickup
