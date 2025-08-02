@@ -27,6 +27,7 @@ import { MintCarModal } from "@/components/MintCarModal";
 import { RentCarModal } from "@/components/RentCarModal";
 import { useMintedCars } from "@/hooks/useMintedCars";
 import { useListedCars } from "@/hooks/useListedCars";
+import { RentalService } from "@/services/rentalService";
 import { useAccount } from "wagmi";
 
 interface AICar {
@@ -557,8 +558,12 @@ export default function CarsPage() {
                       height={200}
                     />
                     {isListedCar && (
-                      <Badge className="absolute top-3 left-3 bg-green-500 text-white">
-                        🚗 Listed NFT
+                      <Badge className={`absolute top-3 left-3 text-white ${
+                        RentalService.isCarRented(car.tokenId) 
+                          ? "bg-red-500" 
+                          : "bg-green-500"
+                      }`}>
+                        {RentalService.isCarRented(car.tokenId) ? "🔒 Rented" : "🚗 Available"}
                       </Badge>
                     )}
                     <Button
@@ -626,12 +631,23 @@ export default function CarsPage() {
                     </div>
 
                     {isListedCar ? (
-                      <RentCarModal carId={car.tokenId} carName={car.name} pricePerDay={car.pricePerDay}>
-                        <Button className="w-full bg-green-500 hover:bg-green-600 text-white">
-                          Rent Now
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </RentCarModal>
+                      RentalService.isCarRented(car.tokenId) ? (
+                        <div className="space-y-2">
+                          <Button disabled className="w-full bg-gray-400 text-white cursor-not-allowed">
+                            Currently Rented
+                          </Button>
+                          <div className="text-xs text-center text-gray-500">
+                            Available: {RentalService.getRentalEndDate(car.tokenId)?.toLocaleDateString()}
+                          </div>
+                        </div>
+                      ) : (
+                        <RentCarModal carId={car.tokenId} carName={car.name} pricePerDay={car.pricePerDay}>
+                          <Button className="w-full bg-green-500 hover:bg-green-600 text-white">
+                            Rent Now
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        </RentCarModal>
+                      )
                     ) : (
                       <Link href={`/cars/${car.id}`}>
                         <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">

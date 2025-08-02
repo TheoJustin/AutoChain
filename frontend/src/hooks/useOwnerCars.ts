@@ -19,6 +19,8 @@ interface OwnerCar {
   carType: string;
   fuelType: string;
   transmission: string;
+  currentRenter?: string;
+  rentalEndDate?: string;
 }
 
 export function useOwnerCars() {
@@ -67,21 +69,47 @@ export function useOwnerCars() {
                 price = car.price ? car.price / 1000 : 0.1; // Default 0.1 ETH/day
               }
 
+              // Check if car is currently rented
+              const rentalData = localStorage.getItem(`carRental_${car.tokenId}`);
+              let currentRenter: string | undefined;
+              let rentalEndDate: string | undefined;
+              let carStatus: 'available' | 'rented' = 'available';
+              let totalEarnings = 0;
+              let totalBookings = 0;
+              
+              if (rentalData) {
+                const rental = JSON.parse(rentalData);
+                const endDate = new Date(rental.endDate);
+                const now = new Date();
+                
+                if (endDate > now) {
+                  currentRenter = rental.renterAddress;
+                  rentalEndDate = rental.endDate;
+                  carStatus = 'rented';
+                }
+                
+                // Calculate earnings and bookings from rental history
+                totalEarnings = rental.totalEarnings || 0;
+                totalBookings = rental.totalBookings || 0;
+              }
+
               return {
                 id: car.tokenId,
                 name: car.name,
                 year: car.year,
                 price: price * 1000, // Store in smaller units for display
-                status: isListed ? 'available' as const : 'available' as const,
+                status: carStatus,
                 rating: 5.0, // Default rating
-                bookings: 0, // Default bookings
-                earnings: 0, // Default earnings
+                bookings: totalBookings,
+                earnings: totalEarnings,
                 image: imgLink,
                 tokenId: car.tokenId,
                 manufacturer: car.manufacturer,
                 carType: car.type,
                 fuelType: car.fuel,
                 transmission: car.transmission,
+                currentRenter,
+                rentalEndDate,
               };
             })
           );
@@ -104,7 +132,9 @@ export function useOwnerCars() {
     avgRating: ownerCars.length > 0 
       ? ownerCars.reduce((sum, car) => sum + car.rating, 0) / ownerCars.length 
       : 0,
-    occupancyRate: 100, // Default occupancy rate
+    occupancyRate: ownerCars.length > 0 
+      ? Math.round((ownerCars.filter(car => car.status === 'rented').length / ownerCars.length) * 100)
+      : 0,
   };
 
   return {
