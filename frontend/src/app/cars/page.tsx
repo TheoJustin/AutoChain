@@ -17,8 +17,12 @@ export default function CarsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-12">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Find Your Perfect Car</h1>
-          <p className="text-gray-600">AI-powered recommendations based on your preferences</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            Find Your Perfect Car
+          </h1>
+          <p className="text-gray-600">
+            AI-powered recommendations based on your preferences
+          </p>
         </div>
 
         {/* Filters */}
@@ -110,10 +114,14 @@ export default function CarsPage() {
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Recommended for You</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Recommended for You
+              </h2>
               <p className="text-gray-600">Based on your preferences</p>
             </div>
-            <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">Powered by AI</Badge>
+            <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
+              Powered by AI
+            </Badge>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -124,25 +132,37 @@ export default function CarsPage() {
               >
                 <div className="relative">
                   <Image
-                    src={imgLink || "/placeholder.svg"}
+                    src={`/images/${car.id}.jpg`}
                     alt={car.name}
                     className="w-full h-48 object-cover rounded-t-lg"
+                    width={100}
+                    height={100}
                   />
-                  <Badge className="absolute top-3 left-3 bg-orange-500 text-white">Recommended</Badge>
-                  <Button size="sm" variant="ghost" className="absolute top-3 right-3 bg-white/80 hover:bg-white">
+                  <Badge className="absolute top-3 left-3 bg-orange-500 text-white">
+                    Recommended
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="absolute top-3 right-3 bg-white/80 hover:bg-white"
+                  >
                     <Heart className="h-4 w-4" />
                   </Button>
                 </div>
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-gray-800">{car.name}</CardTitle>
+                      <CardTitle className="text-gray-800">
+                        {car.name}
+                      </CardTitle>
                       <CardDescription className="text-gray-600">
                         {car.year} • {car.type} • {car.fuel}
                       </CardDescription>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-orange-500">${car.price}</div>
+                      <div className="text-2xl font-bold text-orange-500">
+                        ${car.price}
+                      </div>
                       <div className="text-sm text-gray-500">per day</div>
                     </div>
                   </div>
@@ -151,7 +171,9 @@ export default function CarsPage() {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-1">
                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium text-gray-800">{car.rating}</span>
+                      <span className="font-medium text-gray-800">
+                        {car.rating}
+                      </span>
                       <span className="text-gray-500">({car.reviews})</span>
                     </div>
                     <div className="flex items-center text-gray-500">
@@ -162,7 +184,11 @@ export default function CarsPage() {
 
                   <div className="flex flex-wrap gap-1 mb-4">
                     {car.features.slice(0, 2).map((feature, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs bg-gray-100 text-gray-700">
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="text-xs bg-gray-100 text-gray-700"
+                      >
                         {feature}
                       </Badge>
                     ))}
@@ -183,7 +209,9 @@ export default function CarsPage() {
         {/* All Available Cars */}
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">All Available Cars</h2>
+            <h2 className="text-2xl font-bold text-gray-800">
+              All Available Cars
+            </h2>
             <div className="flex items-center space-x-2">
               <span className="text-gray-600">{allCars.length} cars found</span>
             </div>
@@ -191,27 +219,40 @@ export default function CarsPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {allCars.map((car) => (
-              <Card key={car.id} className="pb-5 group hover:shadow-lg transition-all duration-300">
+              <Card
+                key={car.id}
+                className="pb-5 group hover:shadow-lg transition-all duration-300"
+              >
                 <div className="relative">
                   <Image
-                    src={imgLink || "/placeholder.svg"}
+                    src={`/images/${car.id}.jpg`}
                     alt={car.name}
                     className="w-full h-48 object-cover rounded-t-lg"
+                    width={100}
+                    height={100}
                   />
-                  <Button size="sm" variant="ghost" className="absolute top-3 right-3 bg-white/80 hover:bg-white">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="absolute top-3 right-3 bg-white/80 hover:bg-white"
+                  >
                     <Heart className="h-4 w-4" />
                   </Button>
                 </div>
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-gray-800">{car.name}</CardTitle>
+                      <CardTitle className="text-gray-800">
+                        {car.name}
+                      </CardTitle>
                       <CardDescription className="text-gray-600">
                         {car.year} • {car.type} • {car.fuel}
                       </CardDescription>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-orange-500">${car.price}</div>
+                      <div className="text-2xl font-bold text-orange-500">
+                        ${car.price}
+                      </div>
                       <div className="text-sm text-gray-500">per day</div>
                     </div>
                   </div>
@@ -220,7 +261,9 @@ export default function CarsPage() {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-1">
                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium text-gray-800">{car.rating}</span>
+                      <span className="font-medium text-gray-800">
+                        {car.rating}
+                      </span>
                       <span className="text-gray-500">({car.reviews})</span>
                     </div>
                     <div className="flex items-center text-gray-500">
@@ -231,7 +274,11 @@ export default function CarsPage() {
 
                   <div className="flex flex-wrap gap-1 mb-4">
                     {car.features.slice(0, 2).map((feature, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs bg-gray-100 text-gray-700">
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="text-xs bg-gray-100 text-gray-700"
+                      >
                         {feature}
                       </Badge>
                     ))}
@@ -250,5 +297,5 @@ export default function CarsPage() {
         </section>
       </div>
     </div>
-  )
+  );
 }

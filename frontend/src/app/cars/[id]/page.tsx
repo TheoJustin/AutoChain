@@ -229,9 +229,11 @@ export default function CarDetailPage() {
             <div className="mb-8">
               <div className="relative mb-4">
                 <Image
-                  src={imgLink || '/placeholder.svg'}
+                  src={`/images/${params.id}.jpg`}
                   alt={carDetails.name}
                   className="w-full h-96 object-cover rounded-xl"
+                  width={100}
+                  height={100}
                 />
                 <div className="absolute top-4 left-4">
                   <Badge className="bg-orange-500 text-white">
@@ -260,7 +262,7 @@ export default function CarDetailPage() {
                 {carDetails.images.slice(1).map((image, index) => (
                   <Image
                     key={index}
-                    src={imgLink || '/placeholder.svg'}
+                    src={imgLink || "/placeholder.svg"}
                     alt={`${carDetails.name} view ${index + 2}`}
                     className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
                   />
@@ -343,7 +345,7 @@ export default function CarDetailPage() {
                         className="flex justify-between py-2 border-b border-gray-100"
                       >
                         <span className="text-gray-600 capitalize">
-                          {key.replace(/([A-Z])/g, ' $1')}
+                          {key.replace(/([A-Z])/g, " $1")}
                         </span>
                         <span className="font-medium text-gray-800">
                           {value}
@@ -363,7 +365,7 @@ export default function CarDetailPage() {
                   <div className="flex items-center space-x-4">
                     <Avatar className="h-12 w-12">
                       <AvatarImage
-                        src={carDetails.owner.avatar || '/placeholder.svg'}
+                        src={carDetails.owner.avatar || "/placeholder.svg"}
                       />
                       <AvatarFallback>SJ</AvatarFallback>
                     </Avatar>
@@ -374,7 +376,7 @@ export default function CarDetailPage() {
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
                         <div className="flex items-center">
                           <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                          {carDetails.owner.rating} ({carDetails.owner.reviews}{' '}
+                          {carDetails.owner.rating} ({carDetails.owner.reviews}{" "}
                           reviews)
                         </div>
                         <span>Joined {carDetails.owner.joinDate}</span>
@@ -422,13 +424,13 @@ export default function CarDetailPage() {
                         <div className="flex items-start space-x-3">
                           <Avatar className="h-8 w-8">
                             <AvatarImage
-                              src={review.avatar || '/placeholder.svg'}
+                              src={review.avatar || "/placeholder.svg"}
                             />
                             <AvatarFallback>
                               {review.user
-                                .split(' ')
+                                .split(" ")
                                 .map((n) => n[0])
-                                .join('')}
+                                .join("")}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
@@ -444,7 +446,7 @@ export default function CarDetailPage() {
                               {[...Array(5)].map((_, i) => (
                                 <Star
                                   key={i}
-                                  className={`h-4 w-4 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                                  className={`h-4 w-4 ${i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
                                 />
                               ))}
                             </div>
@@ -542,9 +544,11 @@ export default function CarDetailPage() {
                     <Link key={car.id} href={`/cars/${car.id}`}>
                       <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                         <Image
-                          src={imgLink || '/placeholder.svg'}
+                          src={`/images/${car.id}.jpg`}
                           alt={car.name}
                           className="w-16 h-12 object-cover rounded"
+                          width={100}
+                          height={100}
                         />
                         <div className="flex-1">
                           <h4 className="font-medium text-gray-800">
