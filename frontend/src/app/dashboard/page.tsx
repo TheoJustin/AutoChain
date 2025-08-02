@@ -11,6 +11,8 @@ import imgLink from "@/assets/cars/placeholder.jpg"
 import Image from "next/image"
 import { useRentalHistory } from '@/hooks/useRentalHistory'
 import { useMintedCars } from '@/hooks/useMintedCars'
+import { useOwnerCars } from '@/hooks/useOwnerCars'
+import { useOwnerBookings } from '@/hooks/useOwnerBookings'
 import { useAccount } from 'wagmi'
 
 const renterData = {
@@ -58,58 +60,7 @@ const renterData = {
   },
 }
 
-const ownerData = {
-  cars: [
-    {
-      id: 1,
-      name: "Tesla Model S",
-      year: 2023,
-      price: 120,
-      status: "available",
-      rating: 4.9,
-      bookings: 45,
-      earnings: 5400,
-      image: "/placeholder.svg?height=100&width=150",
-    },
-    {
-      id: 2,
-      name: "Mercedes C-Class",
-      year: 2022,
-      price: 95,
-      status: "rented",
-      rating: 4.7,
-      bookings: 32,
-      earnings: 3040,
-      image: "/placeholder.svg?height=100&width=150",
-    },
-  ],
-  bookings: [
-    {
-      id: 1,
-      renter: "John Doe",
-      car: "Tesla Model S",
-      startDate: "2024-01-20",
-      endDate: "2024-01-23",
-      price: 360,
-      status: "confirmed",
-    },
-    {
-      id: 2,
-      renter: "Jane Smith",
-      car: "Mercedes C-Class",
-      startDate: "2024-01-15",
-      endDate: "2024-01-17",
-      price: 190,
-      status: "active",
-    },
-  ],
-  stats: {
-    totalEarnings: 8440,
-    totalBookings: 77,
-    avgRating: 4.8,
-    occupancyRate: 78,
-  },
-}
+
 
 const adminData = {
   platformStats: {
@@ -129,6 +80,8 @@ const adminData = {
 export default function DashboardPage() {
   const { rentals, activeRentals, completedRentals } = useRentalHistory();
   const { mintedCars } = useMintedCars();
+  const { ownerCars, loading: ownerCarsLoading, stats: ownerStats } = useOwnerCars();
+  const { bookings: ownerBookings, loading: bookingsLoading } = useOwnerBookings();
   const { isConnected } = useAccount();
 
   const totalSpent = rentals.reduce((sum, rental) => sum + parseFloat(rental.totalPrice), 0);
@@ -310,7 +263,7 @@ export default function DashboardPage() {
                   <DollarSign className="h-4 w-4 text-orange-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-gray-800">${ownerData.stats.totalEarnings}</div>
+                  <div className="text-2xl font-bold text-gray-800">{ownerStats.totalEarnings.toFixed(3)} ETH</div>
                 </CardContent>
               </Card>
               <Card className="py-5">
@@ -319,7 +272,7 @@ export default function DashboardPage() {
                   <Calendar className="h-4 w-4 text-orange-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-gray-800">{ownerData.stats.totalBookings}</div>
+                  <div className="text-2xl font-bold text-gray-800">{ownerStats.totalBookings}</div>
                 </CardContent>
               </Card>
               <Card className="py-5">
@@ -328,7 +281,7 @@ export default function DashboardPage() {
                   <Star className="h-4 w-4 text-orange-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-gray-800">{ownerData.stats.avgRating}</div>
+                  <div className="text-2xl font-bold text-gray-800">{ownerStats.avgRating.toFixed(1)}</div>
                 </CardContent>
               </Card>
               <Card className="py-5">
@@ -337,7 +290,7 @@ export default function DashboardPage() {
                   <TrendingUp className="h-4 w-4 text-orange-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-gray-800">{ownerData.stats.occupancyRate}%</div>
+                  <div className="text-2xl font-bold text-gray-800">{ownerStats.occupancyRate}%</div>
                 </CardContent>
               </Card>
             </div>
@@ -355,56 +308,74 @@ export default function DashboardPage() {
                 </Button>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {ownerData.cars.map((car) => (
-                    <div key={car.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
-                      <Image
-                        src={imgLink || "/placeholder.svg"}
-                        alt={car.name}
-                        className="w-20 h-14 object-cover rounded"
-                      />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-800">{car.name}</h3>
-                        <p className="text-sm text-gray-600">
-                          {car.year} • ${car.price}/day
-                        </p>
-                        <div className="flex items-center space-x-4 mt-1">
-                          <div className="flex items-center">
-                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                            <span className="text-sm text-gray-600">{car.rating}</span>
+                {ownerCarsLoading ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600">Loading your cars...</p>
+                  </div>
+                ) : ownerCars.length > 0 ? (
+                  <div className="space-y-4">
+                    {ownerCars.map((car) => (
+                      <div key={car.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+                        <Image
+                          src={car.image || imgLink}
+                          alt={car.name}
+                          className="w-20 h-14 object-cover rounded"
+                        />
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-800">{car.name}</h3>
+                          <p className="text-sm text-gray-600">
+                            {car.year} • {(car.price / 1000).toFixed(3)} ETH/day
+                          </p>
+                          <div className="flex items-center space-x-4 mt-1">
+                            <div className="flex items-center">
+                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                              <span className="text-sm text-gray-600">{car.rating}</span>
+                            </div>
+                            <span className="text-sm text-gray-600">{car.bookings} bookings</span>
+                            <span className="text-sm text-gray-600">Token #{car.tokenId}</span>
                           </div>
-                          <span className="text-sm text-gray-600">{car.bookings} bookings</span>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-semibold text-green-600">{car.earnings.toFixed(3)} ETH</div>
+                          <p className="text-sm text-gray-600">Total earned</p>
+                        </div>
+                        <div className="text-center">
+                          <Badge
+                            className={
+                              car.status === "available"
+                                ? "bg-green-100 text-green-800 hover:bg-green-100"
+                                : "bg-orange-100 text-orange-800 hover:bg-orange-100"
+                            }
+                          >
+                            {car.status === "available" ? "Available" : "Rented"}
+                          </Badge>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 bg-transparent">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="text-center">
-                        <div className="font-semibold text-green-600">${car.earnings}</div>
-                        <p className="text-sm text-gray-600">Total earned</p>
-                      </div>
-                      <div className="text-center">
-                        <Badge
-                          className={
-                            car.status === "available"
-                              ? "bg-green-100 text-green-800 hover:bg-green-100"
-                              : "bg-orange-100 text-orange-800 hover:bg-orange-100"
-                          }
-                        >
-                          {car.status === "available" ? "Available" : "Rented"}
-                        </Badge>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 bg-transparent">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Car className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-4">No cars listed yet</p>
+                    <Link href="/mint">
+                      <Button className="bg-orange-500 hover:bg-orange-600 text-white">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Mint Your First Car
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -415,34 +386,49 @@ export default function DashboardPage() {
                 <CardDescription>Latest rental requests for your cars</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {ownerData.bookings.map((booking) => (
-                    <div
-                      key={booking.id}
-                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
-                    >
-                      <div>
-                        <h3 className="font-semibold text-gray-800">{booking.renter}</h3>
-                        <p className="text-sm text-gray-600">{booking.car}</p>
-                        <p className="text-sm text-gray-600">
-                          {booking.startDate} to {booking.endDate}
-                        </p>
+                {bookingsLoading ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600">Loading bookings...</p>
+                  </div>
+                ) : ownerBookings.length > 0 ? (
+                  <div className="space-y-4">
+                    {ownerBookings.map((booking) => (
+                      <div
+                        key={booking.id}
+                        className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                      >
+                        <div>
+                          <h3 className="font-semibold text-gray-800">{booking.renter}</h3>
+                          <p className="text-sm text-gray-600">{booking.car}</p>
+                          <p className="text-sm text-gray-600">
+                            {booking.startDate} to {booking.endDate}
+                          </p>
+                          <p className="text-xs text-gray-500">Token #{booking.tokenId}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold text-gray-800">{booking.price.toFixed(3)} ETH</div>
+                          <Badge
+                            className={
+                              booking.status === "confirmed"
+                                ? "bg-green-100 text-green-800 hover:bg-green-100"
+                                : booking.status === "active"
+                                ? "bg-orange-100 text-orange-800 hover:bg-orange-100"
+                                : "bg-gray-100 text-gray-800 hover:bg-gray-100"
+                            }
+                          >
+                            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                          </Badge>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <div className="font-semibold text-gray-800">${booking.price}</div>
-                        <Badge
-                          className={
-                            booking.status === "confirmed"
-                              ? "bg-green-100 text-green-800 hover:bg-green-100"
-                              : "bg-orange-100 text-orange-800 hover:bg-orange-100"
-                          }
-                        >
-                          {booking.status === "confirmed" ? "Confirmed" : "Active"}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">No bookings yet</p>
+                    <p className="text-sm text-gray-500 mt-2">Bookings will appear here when users rent your cars</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

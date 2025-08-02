@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
+import imgLink from '@/assets/cars/placeholder.jpg';
 
 interface MintedCar {
   id: number;
@@ -63,7 +64,7 @@ export function useMintedCars() {
       rating: 5.0,
       reviews: 0,
       location: 'Your Garage',
-      image: '/placeholder.jpg?height=200&width=300',
+      image: imgLink,
       features: ['NFT Verified', 'Blockchain Owned', 'Smart Contract'],
       tokenId: carData.tokenId,
       mintedAt: new Date()
