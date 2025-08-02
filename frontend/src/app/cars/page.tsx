@@ -1,19 +1,33 @@
 "use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Car, MapPin, Star, Filter, Heart, ArrowRight } from "lucide-react"
-import Link from "next/link"
-import { cars } from "@/data/cars"
-import imgLink from "@/assets/cars/placeholder.jpg"
-import Image from "next/image"
-import { getRecommendationsByFeatures } from "@/services/car.service"
-import { useEffect, useState } from "react"
-import { MintCarModal } from '@/components/MintCarModal'
-import { useMintedCars } from '@/hooks/useMintedCars'
-import { useAccount } from 'wagmi'
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Car, MapPin, Star, Filter, Heart, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { cars } from "@/data/cars";
+import imgLink from "@/assets/cars/placeholder.jpg";
+import Image from "next/image";
+import { getRecommendationsByFeatures } from "@/services/car.service";
+import { useEffect, useState } from "react";
+import { MintCarModal } from "@/components/MintCarModal";
+import { RentCarModal } from "@/components/RentCarModal";
+import { useMintedCars } from "@/hooks/useMintedCars";
+import { useListedCars } from "@/hooks/useListedCars";
+import { useAccount } from "wagmi";
 
 interface AICar {
   id: number;
@@ -39,38 +53,43 @@ export default function CarsPage() {
   const [aiRecommendations, setAiRecommendations] = useState<AICar[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
-    manufacturer: '',
-    type: '',
-    fuel: '',
-    transmission: '',
-    year: '',
-    price_range: ''
+    manufacturer: "",
+    type: "",
+    fuel: "",
+    transmission: "",
+    year: "",
+    price_range: "",
   });
   const { isConnected } = useAccount();
   const { mintedCars } = useMintedCars();
-  
-  const recommendedCars = cars.filter((car) => car.recommended)
-  const allCars = cars
+  const { listedCars } = useListedCars();
+
+  const recommendedCars = cars.filter((car) => car.recommended);
+  // Combine static cars with listed minted cars
+  const allCars = [...cars, ...listedCars];
 
   const fetchAiRecommendations = async (filterData = {}) => {
     try {
       setIsLoading(true);
-      const features = Object.keys(filterData).length > 0 ? filterData : {
-        manufacturer: 'Tesla',
-        fuel: 'Electric',
-        type: 'Sedan'
-      };
+      const features =
+        Object.keys(filterData).length > 0
+          ? filterData
+          : {
+              manufacturer: "Tesla",
+              fuel: "Electric",
+              type: "Sedan",
+            };
       const recommendations = await getRecommendationsByFeatures(features);
-      console.log('🤖 AI Recommendations from Flask:', recommendations);
+      console.log("🤖 AI Recommendations from Flask:", recommendations);
       const formattedCars = recommendations.map((car) => ({
         ...car,
-        location: 'Downtown',
+        location: "Downtown",
         rating: 4.8,
-        reviews: 120
+        reviews: 120,
       }));
       setAiRecommendations(formattedCars);
     } catch (error) {
-      console.error('Failed to fetch AI recommendations:', error);
+      console.error("Failed to fetch AI recommendations:", error);
     } finally {
       setIsLoading(false);
     }
@@ -79,11 +98,11 @@ export default function CarsPage() {
   const handleFilterChange = (key: string, value: string) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    
+
     const activeFilters = Object.fromEntries(
-      Object.entries(newFilters).filter(([_, v]) => v !== '')
+      Object.entries(newFilters).filter(([_, v]) => v !== "")
     );
-    
+
     if (Object.keys(activeFilters).length > 0) {
       fetchAiRecommendations(activeFilters);
     }
@@ -108,7 +127,7 @@ export default function CarsPage() {
           </div>
           <MintCarModal>
             <Button className="bg-blue-500 hover:bg-blue-600 text-white">
-              {isConnected ? 'Mint Car NFT' : 'Connect to Mint'}
+              {isConnected ? "Mint Car NFT" : "Connect to Mint"}
             </Button>
           </MintCarModal>
         </div>
@@ -125,7 +144,7 @@ export default function CarsPage() {
             <div className="grid md:grid-cols-4 lg:grid-cols-6 gap-4">
               <Select
                 onValueChange={(value) =>
-                  handleFilterChange('manufacturer', value)
+                  handleFilterChange("manufacturer", value)
                 }
               >
                 <SelectTrigger>
@@ -142,7 +161,7 @@ export default function CarsPage() {
               </Select>
 
               <Select
-                onValueChange={(value) => handleFilterChange('type', value)}
+                onValueChange={(value) => handleFilterChange("type", value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Type" />
@@ -156,7 +175,7 @@ export default function CarsPage() {
               </Select>
 
               <Select
-                onValueChange={(value) => handleFilterChange('fuel', value)}
+                onValueChange={(value) => handleFilterChange("fuel", value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Fuel Type" />
@@ -171,7 +190,7 @@ export default function CarsPage() {
 
               <Select
                 onValueChange={(value) =>
-                  handleFilterChange('transmission', value)
+                  handleFilterChange("transmission", value)
                 }
               >
                 <SelectTrigger>
@@ -184,7 +203,7 @@ export default function CarsPage() {
               </Select>
 
               <Select
-                onValueChange={(value) => handleFilterChange('year', value)}
+                onValueChange={(value) => handleFilterChange("year", value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Year" />
@@ -199,7 +218,7 @@ export default function CarsPage() {
 
               <Select
                 onValueChange={(value) =>
-                  handleFilterChange('price_range', value)
+                  handleFilterChange("price_range", value)
                 }
               >
                 <SelectTrigger>
@@ -245,12 +264,12 @@ export default function CarsPage() {
                 >
                   <div className="relative">
                     <Image
-                    src={`/images/${car.id}.jpg`}
-                    alt={car.name}
-                    className="w-full h-48 object-cover rounded-t-lg"
-                    width={100}
-                    height={100}
-                  />
+                      src={`/images/${car.id}.jpg`}
+                      alt={car.name}
+                      className="w-full h-48 object-cover rounded-t-lg"
+                      width={100}
+                      height={100}
+                    />
                     <Badge className="absolute top-3 left-3 bg-orange-500 text-white">
                       🤖 AI Recommended
                     </Badge>
@@ -304,7 +323,7 @@ export default function CarsPage() {
 
                     <div className="flex flex-wrap gap-1 mb-4">
                       {car.features
-                        .split(', ')
+                        .split(", ")
                         .slice(0, 3)
                         .map((feature, index) => (
                           <Badge
@@ -334,7 +353,7 @@ export default function CarsPage() {
                 >
                   <div className="relative">
                     <Image
-                      src={imgLink || '/placeholder.svg'}
+                      src={imgLink || "/placeholder.svg"}
                       alt={car.name}
                       className="w-full h-48 object-cover rounded-t-lg"
                     />
@@ -430,7 +449,7 @@ export default function CarsPage() {
                 >
                   <div className="relative">
                     <Image
-                      src={imgLink || '/placeholder.svg'}
+                      src={imgLink || "/placeholder.svg"}
                       alt={car.name}
                       className="w-full h-48 object-cover rounded-t-lg"
                     />
@@ -518,81 +537,113 @@ export default function CarsPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allCars.map((car) => (
-              <Card
-                key={car.id}
-                className="pb-5 group hover:shadow-lg transition-all duration-300"
-              >
-                <div className="relative">
-                  <Image
-                    src={`/images/${car.id}.jpg`}
-                    alt={car.name}
-                    className="w-full h-48 object-cover rounded-t-lg"
-                    width={100}
-                    height={100}
-                  />
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="absolute top-3 right-3 bg-white/80 hover:bg-white"
-                  >
-                    <Heart className="h-4 w-4" />
-                  </Button>
-                </div>
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-gray-800">
-                        {car.name}
-                      </CardTitle>
-                      <CardDescription className="text-gray-600">
-                        {car.year} • {car.type} • {car.fuel}
-                      </CardDescription>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-orange-500">
-                        ${car.price}
-                      </div>
-                      <div className="text-sm text-gray-500">per day</div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium text-gray-800">
-                        {car.rating}
-                      </span>
-                      <span className="text-gray-500">({car.reviews})</span>
-                    </div>
-                    <div className="flex items-center text-gray-500">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      <span className="text-sm">{car.location}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {car.features.slice(0, 2).map((feature, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="text-xs bg-gray-100 text-gray-700"
-                      >
-                        {feature}
+            {allCars.map((car) => {
+              const isListedCar = "tokenId" in car;
+              return (
+                <Card
+                  key={isListedCar ? `listed-${car.tokenId}` : car.id}
+                  className={`pb-5 group hover:shadow-lg transition-all duration-300 ${
+                    isListedCar
+                      ? "border-green-200 bg-gradient-to-br from-green-50 to-white"
+                      : ""
+                  }`}
+                >
+                  <div className="relative">
+                    <Image
+                      src={`/images/${car.id}.jpg`}
+                      alt={car.name}
+                      className="w-full h-48 object-cover rounded-t-lg"
+                      width={100}
+                      height={100}
+                    />
+                    {isListedCar && (
+                      <Badge className="absolute top-3 left-3 bg-green-500 text-white">
+                        🚗 Listed NFT
                       </Badge>
-                    ))}
-                  </div>
-
-                  <Link href={`/cars/${car.id}`}>
-                    <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-                      View Details
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="absolute top-3 right-3 bg-white/80 hover:bg-white"
+                    >
+                      <Heart className="h-4 w-4" />
                     </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
+                  </div>
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-gray-800">
+                          {car.name}
+                        </CardTitle>
+                        <CardDescription className="text-gray-600">
+                          {car.year} • {car.type} • {car.fuel}
+                        </CardDescription>
+                      </div>
+                      <div className="text-right">
+                        <div
+                          className={`text-2xl font-bold ${
+                            isListedCar ? "text-green-500" : "text-orange-500"
+                          }`}
+                        >
+                          $
+                          {isListedCar
+                            ? (parseFloat(car.pricePerDay) * 3000).toFixed(0)
+                            : car.price}
+                        </div>
+                        <div className="text-sm text-gray-500">per day</div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-1">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-medium text-gray-800">
+                          {car.rating}
+                        </span>
+                        <span className="text-gray-500">({car.reviews})</span>
+                      </div>
+                      <div className="flex items-center text-gray-500">
+                        <MapPin className="h-4 w-4 mr-1" />
+                        <span className="text-sm">{car.location}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {car.features.slice(0, 2).map((feature, index) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className={`text-xs ${
+                            isListedCar
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    {isListedCar ? (
+                      <RentCarModal carId={car.tokenId} carName={car.name}>
+                        <Button className="w-full bg-green-500 hover:bg-green-600 text-white">
+                          Rent Now
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </RentCarModal>
+                    ) : (
+                      <Link href={`/cars/${car.id}`}>
+                        <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+                          View Details
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </Link>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </section>
       </div>
