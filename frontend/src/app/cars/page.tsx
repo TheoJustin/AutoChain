@@ -12,7 +12,9 @@ import Image from "next/image"
 import { getRecommendationsByFeatures } from "@/services/car.service"
 import { useEffect, useState } from "react"
 import { MintCarModal } from '@/components/MintCarModal'
+import { RentCarModal } from '@/components/RentCarModal'
 import { useMintedCars } from '@/hooks/useMintedCars'
+import { useListedCars } from '@/hooks/useListedCars'
 import { useAccount } from 'wagmi'
 
 interface AICar {
@@ -48,9 +50,11 @@ export default function CarsPage() {
   });
   const { isConnected } = useAccount();
   const { mintedCars } = useMintedCars();
+  const { listedCars } = useListedCars();
   
   const recommendedCars = cars.filter((car) => car.recommended)
-  const allCars = cars
+  // Combine static cars with listed minted cars
+  const allCars = [...cars, ...listedCars]
 
   const fetchAiRecommendations = async (filterData = {}) => {
     try {
@@ -516,79 +520,102 @@ export default function CarsPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allCars.map((car) => (
-              <Card
-                key={car.id}
-                className="pb-5 group hover:shadow-lg transition-all duration-300"
-              >
-                <div className="relative">
-                  <Image
-                    src={imgLink || '/placeholder.svg'}
-                    alt={car.name}
-                    className="w-full h-48 object-cover rounded-t-lg"
-                  />
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="absolute top-3 right-3 bg-white/80 hover:bg-white"
-                  >
-                    <Heart className="h-4 w-4" />
-                  </Button>
-                </div>
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-gray-800">
-                        {car.name}
-                      </CardTitle>
-                      <CardDescription className="text-gray-600">
-                        {car.year} • {car.type} • {car.fuel}
-                      </CardDescription>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-orange-500">
-                        ${car.price}
-                      </div>
-                      <div className="text-sm text-gray-500">per day</div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium text-gray-800">
-                        {car.rating}
-                      </span>
-                      <span className="text-gray-500">({car.reviews})</span>
-                    </div>
-                    <div className="flex items-center text-gray-500">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      <span className="text-sm">{car.location}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {car.features.slice(0, 2).map((feature, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="text-xs bg-gray-100 text-gray-700"
-                      >
-                        {feature}
+            {allCars.map((car) => {
+              const isListedCar = 'tokenId' in car;
+              return (
+                <Card
+                  key={isListedCar ? `listed-${car.tokenId}` : car.id}
+                  className={`pb-5 group hover:shadow-lg transition-all duration-300 ${
+                    isListedCar ? 'border-green-200 bg-gradient-to-br from-green-50 to-white' : ''
+                  }`}
+                >
+                  <div className="relative">
+                    <Image
+                      src={imgLink || '/placeholder.svg'}
+                      alt={car.name}
+                      className="w-full h-48 object-cover rounded-t-lg"
+                    />
+                    {isListedCar && (
+                      <Badge className="absolute top-3 left-3 bg-green-500 text-white">
+                        🚗 Listed NFT
                       </Badge>
-                    ))}
-                  </div>
-
-                  <Link href={`/cars/${car.id}`}>
-                    <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-                      View Details
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="absolute top-3 right-3 bg-white/80 hover:bg-white"
+                    >
+                      <Heart className="h-4 w-4" />
                     </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
+                  </div>
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-gray-800">
+                          {car.name}
+                        </CardTitle>
+                        <CardDescription className="text-gray-600">
+                          {car.year} • {car.type} • {car.fuel}
+                        </CardDescription>
+                      </div>
+                      <div className="text-right">
+                        <div className={`text-2xl font-bold ${
+                          isListedCar ? 'text-green-500' : 'text-orange-500'
+                        }`}>
+                          ${isListedCar ? (parseFloat(car.pricePerDay) * 3000).toFixed(0) : car.price}
+                        </div>
+                        <div className="text-sm text-gray-500">per day</div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-1">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-medium text-gray-800">
+                          {car.rating}
+                        </span>
+                        <span className="text-gray-500">({car.reviews})</span>
+                      </div>
+                      <div className="flex items-center text-gray-500">
+                        <MapPin className="h-4 w-4 mr-1" />
+                        <span className="text-sm">{car.location}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {car.features.slice(0, 2).map((feature, index) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className={`text-xs ${
+                            isListedCar ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    {isListedCar ? (
+                      <RentCarModal carId={car.tokenId} carName={car.name}>
+                        <Button className="w-full bg-green-500 hover:bg-green-600 text-white">
+                          Rent Now
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </RentCarModal>
+                    ) : (
+                      <Link href={`/cars/${car.id}`}>
+                        <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+                          View Details
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </Link>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </section>
       </div>

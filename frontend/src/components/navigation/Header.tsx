@@ -21,6 +21,12 @@ function Header() {
               Cars
             </Link>
             <Link
+              href="/rent"
+              className="text-gray-600 hover:text-orange-500 transition-colors"
+            >
+              Rent Out
+            </Link>
+            <Link
               href="/dashboard"
               className="text-gray-600 hover:text-orange-500 transition-colors"
             >
