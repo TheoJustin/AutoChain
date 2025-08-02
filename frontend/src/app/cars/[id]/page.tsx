@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Car,
   MapPin,
@@ -21,122 +21,122 @@ import {
   Share,
   Shield,
   CheckCircle,
-} from "lucide-react";
-import Link from "next/link";
-import imgLink from "@/assets/cars/placeholder.jpg";
-import Image from "next/image";
-import { getRecommendationsById } from "@/services/car.service";
-import { useEffect, useState } from "react";
+} from 'lucide-react';
+import Link from 'next/link';
+import imgLink from '@/assets/cars/placeholder.jpg';
+import Image from 'next/image';
+import { getRecommendationsById } from '@/services/car.service';
+import { useEffect, useState } from 'react';
 
 const carDetails = {
   id: 1,
-  name: "Tesla Model 3",
-  manufacturer: "Tesla",
-  model: "Model 3",
+  name: 'Tesla Model 3',
+  manufacturer: 'Tesla',
+  model: 'Model 3',
   year: 2023,
-  type: "Sedan",
-  fuel: "Electric",
-  transmission: "Automatic",
-  drive: "RWD",
-  condition: "Excellent",
-  paintColor: "Pearl White",
+  type: 'Sedan',
+  fuel: 'Electric',
+  transmission: 'Automatic',
+  drive: 'RWD',
+  condition: 'Excellent',
+  paintColor: 'Pearl White',
   price: 89,
   rating: 4.9,
   reviews: 127,
-  location: "Downtown",
+  location: 'Downtown',
   images: [
-    "/placeholder.svg?height=400&width=600",
-    "/placeholder.svg?height=400&width=600",
-    "/placeholder.svg?height=400&width=600",
-    "/placeholder.svg?height=400&width=600",
+    '/placeholder.svg?height=400&width=600',
+    '/placeholder.svg?height=400&width=600',
+    '/placeholder.svg?height=400&width=600',
+    '/placeholder.svg?height=400&width=600',
   ],
   features: [
-    "Autopilot",
-    "Supercharging",
-    "Premium Interior",
-    "Glass Roof",
-    "Mobile Connector",
-    "Over-the-Air Updates",
+    'Autopilot',
+    'Supercharging',
+    'Premium Interior',
+    'Glass Roof',
+    'Mobile Connector',
+    'Over-the-Air Updates',
   ],
   specifications: {
-    range: "358 miles",
-    acceleration: "5.8s 0-60 mph",
-    topSpeed: "140 mph",
-    seating: "5 passengers",
-    cargo: "15 cu ft",
-    charging: "Supercharger Compatible",
+    range: '358 miles',
+    acceleration: '5.8s 0-60 mph',
+    topSpeed: '140 mph',
+    seating: '5 passengers',
+    cargo: '15 cu ft',
+    charging: 'Supercharger Compatible',
   },
   owner: {
-    name: "Sarah Johnson",
+    name: 'Sarah Johnson',
     rating: 4.8,
     reviews: 45,
-    joinDate: "2022",
-    avatar: "/placeholder.svg?height=40&width=40",
+    joinDate: '2022',
+    avatar: '/placeholder.svg?height=40&width=40',
   },
   description:
-    "Experience the future of driving with this pristine Tesla Model 3. This vehicle combines cutting-edge technology with exceptional performance and efficiency. Perfect for city commuting or weekend getaways.",
+    'Experience the future of driving with this pristine Tesla Model 3. This vehicle combines cutting-edge technology with exceptional performance and efficiency. Perfect for city commuting or weekend getaways.',
   rules: [
-    "No smoking",
-    "No pets",
-    "Return with same fuel level",
-    "Maximum 200 miles per day",
+    'No smoking',
+    'No pets',
+    'Return with same fuel level',
+    'Maximum 200 miles per day',
   ],
 };
 
 const similarCars = [
   {
     id: 2,
-    name: "Tesla Model Y",
+    name: 'Tesla Model Y',
     year: 2023,
     price: 105,
     rating: 4.8,
-    image: "/placeholder.svg?height=150&width=200",
+    image: '/placeholder.svg?height=150&width=200',
   },
   {
     id: 3,
-    name: "BMW i4",
+    name: 'BMW i4',
     year: 2022,
     price: 95,
     rating: 4.7,
-    image: "/placeholder.svg?height=150&width=200",
+    image: '/placeholder.svg?height=150&width=200',
   },
   {
     id: 4,
-    name: "Polestar 2",
+    name: 'Polestar 2',
     year: 2023,
     price: 85,
     rating: 4.6,
-    image: "/placeholder.svg?height=150&width=200",
+    image: '/placeholder.svg?height=150&width=200',
   },
 ];
 
 const reviews = [
   {
     id: 1,
-    user: "Mike Chen",
+    user: 'Mike Chen',
     rating: 5,
-    date: "2 days ago",
+    date: '2 days ago',
     comment:
-      "Amazing car! The autopilot feature made my road trip so much more enjoyable. Sarah was very responsive and the car was spotless.",
-    avatar: "/placeholder.svg?height=32&width=32",
+      'Amazing car! The autopilot feature made my road trip so much more enjoyable. Sarah was very responsive and the car was spotless.',
+    avatar: '/placeholder.svg?height=32&width=32',
   },
   {
     id: 2,
-    user: "Emily Rodriguez",
+    user: 'Emily Rodriguez',
     rating: 5,
-    date: "1 week ago",
+    date: '1 week ago',
     comment:
-      "Perfect for my business trip. The car was exactly as described and the charging was convenient. Highly recommend!",
-    avatar: "/placeholder.svg?height=32&width=32",
+      'Perfect for my business trip. The car was exactly as described and the charging was convenient. Highly recommend!',
+    avatar: '/placeholder.svg?height=32&width=32',
   },
   {
     id: 3,
-    user: "David Kim",
+    user: 'David Kim',
     rating: 4,
-    date: "2 weeks ago",
+    date: '2 weeks ago',
     comment:
-      "Great experience overall. The car drives smoothly and the tech features are impressive. Will definitely rent again.",
-    avatar: "/placeholder.svg?height=32&width=32",
+      'Great experience overall. The car drives smoothly and the tech features are impressive. Will definitely rent again.',
+    avatar: '/placeholder.svg?height=32&width=32',
   },
 ];
 
@@ -161,49 +161,53 @@ interface Car {
   recommended?: boolean;
 }
 
+import { useParams } from 'next/navigation';
+
 export default function CarDetailPage() {
-  // const [similarCars, setSimilarCars] = useState<Car[]>([]);
+  const [similarCars, setSimilarCars] = useState<Car[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // useEffect(() => {
-  //   if (!params.carId) return;
+  const params = useParams<{ id: string }>();
 
-  //   const fetchSimilarCars = async () => {
-  //     try {
-  //       setIsLoading(true);
-  //       setError(null);
+  useEffect(() => {
+    if (!params?.id) return;
+    const fetchSimilarCars = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const recommendations = await getRecommendationsById(params.id);
+        const formattedCars = recommendations.map((car) => ({
+          id: car.id,
+          name: car.name,
+          manufacturer: car.manufacturer,
+          year: car.year,
+          type: car.type,
+          fuel: car.fuel,
+          transmission: car.transmission,
+          condition: car.condition,
+          price: car.price,
+          image_url: car.image_url,
+          lat: car.lat,
+          long: car.long,
+          features: car.features,
+          price_range: car.price_range,
+        }));
+        setSimilarCars(formattedCars);
+      } catch (err) {
+        setError('Failed to load recommendations. Please try again later.');
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSimilarCars();
+    console.log('Fetching recommendations for car ID:', params.id);
+  }, [params?.id]);
 
-  //       const recommendations = await getRecommendationsById(params.carId);
-
-  //       const formattedCars = recommendations.map(car => ({
-  //         id: car.id,
-  //         name: car.name,
-  //         manufacturer: car.manufacturer,
-  //         year: car.year,
-  //         type: car.type,
-  //         fuel: car.fuel,
-  //         transmission: car.transmission,
-  //         condition: car.condition,
-  //         price: car.price,
-  //         image_url: car.image_url,
-  //         lat: car.lat,
-  //         long: car.long,
-  //         features: car.features,
-  //         price_range: car.price_range,
-  //       }));
-
-  //       setSimilarCars(formattedCars);
-  //     } catch (err) {
-  //       setError("Failed to load recommendations. Please try again later.");
-  //       console.error(err);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   fetchSimilarCars();
-  // }, [params.carId]);
+  useEffect(() => {
+    console.log('Similar Cars:', similarCars);
+  }, [similarCars]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -224,7 +228,7 @@ export default function CarDetailPage() {
             <div className="mb-8">
               <div className="relative mb-4">
                 <Image
-                  src={imgLink || "/placeholder.svg"}
+                  src={imgLink || '/placeholder.svg'}
                   alt={carDetails.name}
                   className="w-full h-96 object-cover rounded-xl"
                 />
@@ -255,7 +259,7 @@ export default function CarDetailPage() {
                 {carDetails.images.slice(1).map((image, index) => (
                   <Image
                     key={index}
-                    src={imgLink || "/placeholder.svg"}
+                    src={imgLink || '/placeholder.svg'}
                     alt={`${carDetails.name} view ${index + 2}`}
                     className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
                   />
@@ -338,7 +342,7 @@ export default function CarDetailPage() {
                         className="flex justify-between py-2 border-b border-gray-100"
                       >
                         <span className="text-gray-600 capitalize">
-                          {key.replace(/([A-Z])/g, " $1")}
+                          {key.replace(/([A-Z])/g, ' $1')}
                         </span>
                         <span className="font-medium text-gray-800">
                           {value}
@@ -358,7 +362,7 @@ export default function CarDetailPage() {
                   <div className="flex items-center space-x-4">
                     <Avatar className="h-12 w-12">
                       <AvatarImage
-                        src={carDetails.owner.avatar || "/placeholder.svg"}
+                        src={carDetails.owner.avatar || '/placeholder.svg'}
                       />
                       <AvatarFallback>SJ</AvatarFallback>
                     </Avatar>
@@ -369,7 +373,7 @@ export default function CarDetailPage() {
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
                         <div className="flex items-center">
                           <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                          {carDetails.owner.rating} ({carDetails.owner.reviews}{" "}
+                          {carDetails.owner.rating} ({carDetails.owner.reviews}{' '}
                           reviews)
                         </div>
                         <span>Joined {carDetails.owner.joinDate}</span>
@@ -417,13 +421,13 @@ export default function CarDetailPage() {
                         <div className="flex items-start space-x-3">
                           <Avatar className="h-8 w-8">
                             <AvatarImage
-                              src={review.avatar || "/placeholder.svg"}
+                              src={review.avatar || '/placeholder.svg'}
                             />
                             <AvatarFallback>
                               {review.user
-                                .split(" ")
+                                .split(' ')
                                 .map((n) => n[0])
-                                .join("")}
+                                .join('')}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
@@ -439,7 +443,7 @@ export default function CarDetailPage() {
                               {[...Array(5)].map((_, i) => (
                                 <Star
                                   key={i}
-                                  className={`h-4 w-4 ${i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
+                                  className={`h-4 w-4 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
                                 />
                               ))}
                             </div>
@@ -537,7 +541,7 @@ export default function CarDetailPage() {
                     <Link key={car.id} href={`/cars/${car.id}`}>
                       <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                         <Image
-                          src={imgLink || "/placeholder.svg"}
+                          src={imgLink || '/placeholder.svg'}
                           alt={car.name}
                           className="w-16 h-12 object-cover rounded"
                         />
