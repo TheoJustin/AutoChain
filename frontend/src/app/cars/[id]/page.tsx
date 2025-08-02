@@ -27,6 +27,7 @@ import imgLink from "@/assets/cars/placeholder.jpg";
 import Image from "next/image";
 import { getRecommendationsById } from "@/services/car.service";
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
 const carDetails = {
   id: 1,
@@ -162,48 +163,52 @@ interface Car {
 }
 
 export default function CarDetailPage() {
-  // const [similarCars, setSimilarCars] = useState<Car[]>([]);
+  const params = useParams<{ id: string }>();
+  const [similarCars, setSimilarCars] = useState<Car[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // useEffect(() => {
-  //   if (!params.carId) return;
+  useEffect(() => {
+    if (!params.id) {
+      console.log("no params");
+      return;
+    }
 
-  //   const fetchSimilarCars = async () => {
-  //     try {
-  //       setIsLoading(true);
-  //       setError(null);
+    const fetchSimilarCars = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-  //       const recommendations = await getRecommendationsById(params.carId);
+        const recommendations = await getRecommendationsById(params.id);
 
-  //       const formattedCars = recommendations.map(car => ({
-  //         id: car.id,
-  //         name: car.name,
-  //         manufacturer: car.manufacturer,
-  //         year: car.year,
-  //         type: car.type,
-  //         fuel: car.fuel,
-  //         transmission: car.transmission,
-  //         condition: car.condition,
-  //         price: car.price,
-  //         image_url: car.image_url,
-  //         lat: car.lat,
-  //         long: car.long,
-  //         features: car.features,
-  //         price_range: car.price_range,
-  //       }));
+        const formattedCars = recommendations.map((car) => ({
+          id: car.id,
+          name: car.name,
+          manufacturer: car.manufacturer,
+          year: car.year,
+          type: car.type,
+          fuel: car.fuel,
+          transmission: car.transmission,
+          condition: car.condition,
+          price: car.price,
+          image_url: car.image_url,
+          lat: car.lat,
+          long: car.long,
+          features: car.features,
+          price_range: car.price_range,
+        }));
 
-  //       setSimilarCars(formattedCars);
-  //     } catch (err) {
-  //       setError("Failed to load recommendations. Please try again later.");
-  //       console.error(err);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
+        setSimilarCars(formattedCars);
+      } catch (err) {
+        setError("Failed to load recommendations. Please try again later.");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  //   fetchSimilarCars();
-  // }, [params.carId]);
+    fetchSimilarCars();
+  }, [params.id]);
 
   return (
     <div className="min-h-screen bg-white">
