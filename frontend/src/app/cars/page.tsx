@@ -550,11 +550,11 @@ export default function CarsPage() {
                 >
                   <div className="relative">
                     <Image
-                      src={`/images/${car.id}.jpg`}
+                      src={imgLink}
                       alt={car.name}
                       className="w-full h-48 object-cover rounded-t-lg"
-                      width={100}
-                      height={100}
+                      width={300}
+                      height={200}
                     />
                     {isListedCar && (
                       <Badge className="absolute top-3 left-3 bg-green-500 text-white">

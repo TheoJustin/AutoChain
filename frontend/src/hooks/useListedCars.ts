@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useReadContract } from 'wagmi';
 import { CAR_NFT_ADDRESS } from '@/contracts/CarNFT';
 import { CARS_FOR_RENT_ADDRESS, CARS_FOR_RENT_ABI } from '@/contracts/CarsForRent';
+import imgLink from '@/assets/cars/placeholder.jpg';
 
 interface ListedCar {
   id: number;
@@ -41,6 +42,7 @@ export function useListedCars() {
             // Convert minted cars to listed cars format
             const convertedCars = cars.map((car: any) => ({
               ...car,
+              image: imgLink,
               pricePerDay: '0.01', // Default price, would come from blockchain in production
               owner: key.replace('mintedCars_', ''),
             }));
