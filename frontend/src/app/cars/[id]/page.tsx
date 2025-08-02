@@ -162,8 +162,6 @@ interface Car {
   recommended?: boolean;
 }
 
-import { useParams } from 'next/navigation';
-
 export default function CarDetailPage() {
   const params = useParams<{ id: string }>();
   const [similarCars, setSimilarCars] = useState<Car[]>([]);

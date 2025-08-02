@@ -1,4 +1,3 @@
-
 interface Car {
   id: number;
   name: string;
