@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -7,6 +9,9 @@ import { Car, Star, Calendar, DollarSign, TrendingUp, Users, Plus, Eye, Edit, Tr
 import Link from "next/link"
 import imgLink from "@/assets/cars/placeholder.jpg"
 import Image from "next/image"
+import { useRentalHistory } from '@/hooks/useRentalHistory'
+import { useMintedCars } from '@/hooks/useMintedCars'
+import { useAccount } from 'wagmi'
 
 const renterData = {
   activeRentals: [
@@ -122,6 +127,13 @@ const adminData = {
 }
 
 export default function DashboardPage() {
+  const { rentals, activeRentals, completedRentals } = useRentalHistory();
+  const { mintedCars } = useMintedCars();
+  const { isConnected } = useAccount();
+
+  const totalSpent = rentals.reduce((sum, rental) => sum + parseFloat(rental.totalPrice), 0);
+  const avgRating = 4.8; // Default rating
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -147,7 +159,7 @@ export default function DashboardPage() {
                   <Car className="h-4 w-4 text-orange-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-gray-800">{renterData.stats.totalRentals}</div>
+                  <div className="text-2xl font-bold text-gray-800">{rentals.length}</div>
                 </CardContent>
               </Card>
               <Card className="py-5">
@@ -156,7 +168,7 @@ export default function DashboardPage() {
                   <DollarSign className="h-4 w-4 text-orange-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-gray-800">${renterData.stats.totalSpent}</div>
+                  <div className="text-2xl font-bold text-gray-800">{totalSpent.toFixed(3)} ETH</div>
                 </CardContent>
               </Card>
               <Card className="py-5">
@@ -165,16 +177,16 @@ export default function DashboardPage() {
                   <Star className="h-4 w-4 text-orange-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-gray-800">{renterData.stats.avgRating}</div>
+                  <div className="text-2xl font-bold text-gray-800">{avgRating}</div>
                 </CardContent>
               </Card>
               <Card className="py-5">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Favorite Type</CardTitle>
+                  <CardTitle className="text-sm font-medium text-gray-600">Active Rentals</CardTitle>
                   <TrendingUp className="h-4 w-4 text-orange-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-gray-800">{renterData.stats.favoriteType}</div>
+                  <div className="text-2xl font-bold text-gray-800">{activeRentals.length}</div>
                 </CardContent>
               </Card>
             </div>
@@ -186,27 +198,27 @@ export default function DashboardPage() {
                 <CardDescription>Your current car rentals</CardDescription>
               </CardHeader>
               <CardContent>
-                {renterData.activeRentals.length > 0 ? (
+                {activeRentals.length > 0 ? (
                   <div className="space-y-4">
-                    {renterData.activeRentals.map((rental) => (
+                    {activeRentals.map((rental) => (
                       <div
                         key={rental.id}
                         className="flex items-center space-x-4 p-4 border border-orange-200 rounded-lg bg-orange-50"
                       >
                         <Image
                           src={imgLink || "/placeholder.svg"}
-                          alt={rental.car}
+                          alt={rental.carName}
                           className="w-20 h-14 object-cover rounded"
                         />
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-800">{rental.car}</h3>
-                          <p className="text-sm text-gray-600">Owner: {rental.owner}</p>
+                          <h3 className="font-semibold text-gray-800">{rental.carName}</h3>
+                          <p className="text-sm text-gray-600">{rental.days} days rental</p>
                           <p className="text-sm text-gray-600">
                             {rental.startDate} to {rental.endDate}
                           </p>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold text-orange-500">${rental.price}</div>
+                          <div className="font-semibold text-orange-500">{rental.totalPrice} ETH</div>
                           <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>
                         </div>
                         <Button variant="outline" size="sm">
@@ -231,44 +243,59 @@ export default function DashboardPage() {
             <Card className="py-5">
               <CardHeader>
                 <CardTitle className="text-gray-800">Rental History</CardTitle>
-                <CardDescription>Your completed rentals</CardDescription>
+                <CardDescription>Your completed and active rentals</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {renterData.pastRentals.map((rental) => (
-                    <div key={rental.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
-                      <Image
-                        src={imgLink || "/placeholder.svg"}
-                        alt={rental.car}
-                        className="w-20 h-14 object-cover rounded"
-                      />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-800">{rental.car}</h3>
-                        <p className="text-sm text-gray-600">Owner: {rental.owner}</p>
-                        <p className="text-sm text-gray-600">
-                          {rental.startDate} to {rental.endDate}
-                        </p>
-                      </div>
-                      <div className="text-center">
-                        <div className="flex items-center mb-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${i < rental.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
-                            />
-                          ))}
+                {rentals.length > 0 ? (
+                  <div className="space-y-4">
+                    {rentals.map((rental) => (
+                      <div key={rental.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+                        <Image
+                          src={imgLink || "/placeholder.svg"}
+                          alt={rental.carName}
+                          className="w-20 h-14 object-cover rounded"
+                        />
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-800">{rental.carName}</h3>
+                          <p className="text-sm text-gray-600">{rental.days} days • {rental.pricePerDay} ETH/day</p>
+                          <p className="text-sm text-gray-600">
+                            {rental.startDate} to {rental.endDate}
+                          </p>
                         </div>
-                        <p className="text-sm text-gray-600">Your rating</p>
+                        <div className="text-center">
+                          <div className="flex items-center mb-1">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${i < 5 ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
+                              />
+                            ))}
+                          </div>
+                          <p className="text-sm text-gray-600">Rating</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold text-gray-800">{rental.totalPrice} ETH</div>
+                          <Badge 
+                            className={rental.status === 'active' 
+                              ? "bg-green-100 text-green-800 hover:bg-green-100" 
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-100"
+                            }
+                          >
+                            {rental.status === 'active' ? 'Active' : 'Completed'}
+                          </Badge>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <div className="font-semibold text-gray-800">${rental.price}</div>
-                        <Badge variant="secondary" className="bg-gray-100 text-gray-700">
-                          Completed
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Car className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-4">No rental history yet</p>
+                    <Link href="/cars">
+                      <Button className="bg-orange-500 hover:bg-orange-600 text-white">Start Renting</Button>
+                    </Link>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

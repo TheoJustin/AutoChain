@@ -29,9 +29,11 @@ export default function RentPage() {
       setIsListing(prev => ({ ...prev, [tokenId]: true }));
       const priceInWei = parseEther(price).toString();
       await listCar(tokenId, priceInWei);
+      alert(`Car successfully listed for ${price} ETH/day! It's now available for rent.`);
       setListingPrices(prev => ({ ...prev, [tokenId]: '' }));
     } catch (error) {
       console.error('Failed to list car:', error);
+      alert('Failed to list car. Make sure you own this NFT and have approved the rental contract.');
     } finally {
       setIsListing(prev => ({ ...prev, [tokenId]: false }));
     }

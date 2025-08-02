@@ -626,7 +626,7 @@ export default function CarsPage() {
                     </div>
 
                     {isListedCar ? (
-                      <RentCarModal carId={car.tokenId} carName={car.name}>
+                      <RentCarModal carId={car.tokenId} carName={car.name} pricePerDay={car.pricePerDay}>
                         <Button className="w-full bg-green-500 hover:bg-green-600 text-white">
                           Rent Now
                           <ArrowRight className="ml-2 h-4 w-4" />
