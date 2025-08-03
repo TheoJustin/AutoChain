@@ -1,16 +1,12 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
-from recommendation.scripts.app import CarRecommender 
+from scripts.app import CarRecommender 
 
 app = Flask(__name__)
 CORS(app)
-
-TEMP_DIR = "./yolov11/temp_uploads"
-if not os.path.exists(TEMP_DIR):
-    os.makedirs(TEMP_DIR)
     
-SAVED_MODEL_DIR = './recommendation/models'
+SAVED_MODEL_DIR = os.path.join(os.path.dirname(__file__), '..', 'models')
 recommender = CarRecommender()
 
 if not recommender.load_model(SAVED_MODEL_DIR):
