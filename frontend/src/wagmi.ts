@@ -29,14 +29,13 @@ export function getConfig() {
   ];
 
   return createConfig({
-    chains: [mainnet, liskSepolia],
+    chains: [liskSepolia],
     connectors,
     storage: createStorage({
       storage: cookieStorage,
     }),
     ssr: true,
     transports: {
-      [mainnet.id]: http(),
       [liskSepolia.id]: http(),
     },
   });
