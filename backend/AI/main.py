@@ -21,34 +21,6 @@ if not recommender.load_model(SAVED_MODEL_DIR):
 def hello():
     return jsonify({"Success": "API is working"})
 
-@app.route('/api/predict', methods=['POST'])
-def predict():
-    if 'image' not in request.files:
-        return jsonify({"error": "No image file provided in the request"}), 400
-    
-    file = request.files['image']
-    
-    if file.filename == '':
-        return jsonify({"error": "No file selected"}), 400
-    
-    if file:
-        temp_path = os.path.join(TEMP_DIR, file.filename)
-        file.save(temp_path)
-        
-        try:
-            detections = [{"error": "Object detection logic not connected"}]
-        except Exception as e:
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
-            return jsonify({"error": f"An error occurred during prediction: {e}"}), 500
-
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
-        
-        return jsonify({"detections": detections})
-        
-    return jsonify({"error": "Invalid file"}), 400
-
 @app.route('/api/recommend/<int:car_id>', methods=['GET'])
 def recommend_by_id(car_id):
     if recommender is None:
