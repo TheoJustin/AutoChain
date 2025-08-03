@@ -37,17 +37,31 @@ export default function ContactPage() {
   const { address } = useAccount()
   const { writeContract } = useWriteContract()
   
-  const { data: messages, refetch } = useReadContract({
+  const { data: totalMessages, error: totalError } = useReadContract({
+    address: CONTACT_OBJECTS_ADDRESS,
+    abi: CONTACT_OBJECTS_ABI,
+    functionName: "getContactMessagesCount",
+  })
+  
+  const { data: messages, refetch, isLoading: messagesLoading, error: messagesError } = useReadContract({
     address: CONTACT_OBJECTS_ADDRESS,
     abi: CONTACT_OBJECTS_ABI,
     functionName: "getAllContactMessages",
-  }) as { data: ContactMessage[] | undefined, refetch: () => void }
+    query: {
+      enabled: !!totalMessages && Number(totalMessages) > 0
+    }
+  }) as { data: ContactMessage[] | undefined, refetch: () => void, isLoading: boolean, error: any }
   
-  const { data: totalMessages } = useReadContract({
-    address: CONTACT_OBJECTS_ADDRESS,
-    abi: CONTACT_OBJECTS_ABI,
-    functionName: "totalContactMessageObjects",
-  })
+  // Debug logging
+  useEffect(() => {
+    console.log('Contract Address:', CONTACT_OBJECTS_ADDRESS)
+    console.log('Total messages:', totalMessages)
+    console.log('Total messages error:', totalError)
+    console.log('Messages data:', messages)
+    console.log('Messages loading:', messagesLoading)
+    console.log('Messages error:', messagesError)
+    console.log('Connected address:', address)
+  }, [messages, totalMessages, totalError, messagesLoading, messagesError, address])
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -96,7 +110,9 @@ export default function ContactPage() {
       // Refetch messages after a short delay
       setTimeout(() => {
         refetch()
-      }, 2000)
+      }, 3000)
+      
+      alert("Message submitted successfully!")
       
     } catch (error) {
       console.error("Error submitting message:", error)
@@ -358,10 +374,32 @@ export default function ContactPage() {
 
         {/* Contact Messages Section */}
         <div className="mt-16">
-          <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">Recent Contact Messages</h2>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-800">Recent Contact Messages</h2>
+            <Button onClick={() => refetch()} variant="outline" size="sm">
+              Refresh Messages
+            </Button>
+          </div>
           <div className="max-w-4xl mx-auto">
-            {messages && messages.length > 0 ? (
+            {messagesLoading ? (
+              <Card className="py-8">
+                <CardContent className="text-center">
+                  <Loader2 className="h-12 w-12 text-gray-400 mx-auto mb-4 animate-spin" />
+                  <p className="text-gray-600">Loading messages...</p>
+                </CardContent>
+              </Card>
+            ) : messagesError ? (
+              <Card className="py-8 border-red-200">
+                <CardContent className="text-center">
+                  <p className="text-red-600">Error loading messages: {messagesError.message}</p>
+                  <Button onClick={() => refetch()} className="mt-4" variant="outline">
+                    Retry
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : messages && messages.length > 0 ? (
               <div className="space-y-4">
+                <p className="text-sm text-gray-500 text-center mb-4">Total messages: {messages.length}</p>
                 {messages.slice().reverse().map((msg, index) => (
                   <Card key={index} className="py-4">
                     <CardContent>
@@ -397,6 +435,7 @@ export default function ContactPage() {
                 <CardContent className="text-center">
                   <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">No contact messages yet. Be the first to send one!</p>
+                  <p className="text-sm text-gray-500 mt-2">Total messages in contract: {totalMessages?.toString() || '0'}</p>
                 </CardContent>
               </Card>
             )}
