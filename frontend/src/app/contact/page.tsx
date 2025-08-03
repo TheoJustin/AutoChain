@@ -1,13 +1,110 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Car, Mail, Phone, MapPin, Clock, MessageSquare, HelpCircle, Shield } from "lucide-react"
+import { Car, Mail, Phone, MapPin, Clock, MessageSquare, HelpCircle, Shield, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { useState, useEffect } from "react"
+import { useWriteContract, useReadContract, useAccount } from "wagmi"
+import { CONTACT_OBJECTS_ADDRESS, CONTACT_OBJECTS_ABI } from "@/contracts/ContactObjects"
+
+interface ContactMessage {
+  contactId: bigint
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  subject: string
+  message: string
+  timestamp: bigint
+}
 
 export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: ""
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  const { address } = useAccount()
+  const { writeContract } = useWriteContract()
+  
+  const { data: messages, refetch } = useReadContract({
+    address: CONTACT_OBJECTS_ADDRESS,
+    abi: CONTACT_OBJECTS_ABI,
+    functionName: "getAllContactMessages",
+  }) as { data: ContactMessage[] | undefined, refetch: () => void }
+  
+  const { data: totalMessages } = useReadContract({
+    address: CONTACT_OBJECTS_ADDRESS,
+    abi: CONTACT_OBJECTS_ABI,
+    functionName: "totalContactMessageObjects",
+  })
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!address) {
+      alert("Please connect your wallet first")
+      return
+    }
+    
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.subject || !formData.message) {
+      alert("Please fill in all required fields")
+      return
+    }
+    
+    setIsSubmitting(true)
+    
+    try {
+      const nextId = totalMessages ? Number(totalMessages) + 1 : 1
+      const timestamp = Math.floor(Date.now() / 1000)
+      
+      await writeContract({
+        address: CONTACT_OBJECTS_ADDRESS,
+        abi: CONTACT_OBJECTS_ABI,
+        functionName: "createContactMessageObjects",
+        args: [
+          BigInt(nextId),
+          formData.firstName,
+          formData.lastName,
+          formData.email,
+          formData.phone || "",
+          formData.subject,
+          formData.message,
+          BigInt(timestamp)
+        ]
+      })
+      
+      // Reset form
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        subject: "",
+        message: ""
+      })
+      
+      // Refetch messages after a short delay
+      setTimeout(() => {
+        refetch()
+      }, 2000)
+      
+    } catch (error) {
+      console.error("Error submitting message:", error)
+      alert("Failed to submit message. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -28,54 +125,103 @@ export default function ContactPage() {
                 <CardDescription>Fill out the form below and we'll get back to you within 24 hours.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" placeholder="John" />
+                <form onSubmit={handleSubmit}>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input 
+                        id="firstName" 
+                        placeholder="John" 
+                        value={formData.firstName}
+                        onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input 
+                        id="lastName" 
+                        placeholder="Doe" 
+                        value={formData.lastName}
+                        onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                        required
+                      />
+                    </div>
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" placeholder="Doe" />
+                    <Label htmlFor="email">Email</Label>
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder="john@example.com" 
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      required
+                    />
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="john@example.com" />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number (Optional)</Label>
+                    <Input 
+                      id="phone" 
+                      type="tel" 
+                      placeholder="+1 (555) 123-4567" 
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number (Optional)</Label>
-                  <Input id="phone" type="tel" placeholder="+1 (555) 123-4567" />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="subject">Subject</Label>
+                    <Select value={formData.subject} onValueChange={(value) => setFormData({...formData, subject: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a topic" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="rental">Rental Support</SelectItem>
+                        <SelectItem value="listing">Car Listing Help</SelectItem>
+                        <SelectItem value="wallet">Wallet & Payments</SelectItem>
+                        <SelectItem value="technical">Technical Issues</SelectItem>
+                        <SelectItem value="account">Account Management</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="subject">Subject</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a topic" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="rental">Rental Support</SelectItem>
-                      <SelectItem value="listing">Car Listing Help</SelectItem>
-                      <SelectItem value="wallet">Wallet & Payments</SelectItem>
-                      <SelectItem value="technical">Technical Issues</SelectItem>
-                      <SelectItem value="account">Account Management</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="message">Message</Label>
+                    <Textarea
+                      id="message"
+                      placeholder="Please describe your question or issue in detail..."
+                      className="min-h-32"
+                      value={formData.message}
+                      onChange={(e) => setFormData({...formData, message: e.target.value})}
+                      required
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="message">Message</Label>
-                  <Textarea
-                    id="message"
-                    placeholder="Please describe your question or issue in detail..."
-                    className="min-h-32"
-                  />
-                </div>
-
-                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">Send Message</Button>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white" 
+                    disabled={isSubmitting || !address}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Send Message"
+                    )}
+                  </Button>
+                  
+                  {!address && (
+                    <p className="text-sm text-red-600 text-center mt-2">
+                      Please connect your wallet to submit a message
+                    </p>
+                  )}
+                </form>
               </CardContent>
             </Card>
           </div>
@@ -207,6 +353,53 @@ export default function ContactPage() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </div>
+
+        {/* Contact Messages Section */}
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">Recent Contact Messages</h2>
+          <div className="max-w-4xl mx-auto">
+            {messages && messages.length > 0 ? (
+              <div className="space-y-4">
+                {messages.slice().reverse().map((msg, index) => (
+                  <Card key={index} className="py-4">
+                    <CardContent>
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="font-semibold text-gray-800">
+                            {msg.firstName} {msg.lastName}
+                          </h3>
+                          <p className="text-sm text-gray-600">{msg.email}</p>
+                          {msg.phone && <p className="text-sm text-gray-600">{msg.phone}</p>}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-500">
+                            {new Date(Number(msg.timestamp) * 1000).toLocaleDateString()}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {new Date(Number(msg.timestamp) * 1000).toLocaleTimeString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mb-2">
+                        <span className="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
+                          {msg.subject}
+                        </span>
+                      </div>
+                      <p className="text-gray-700">{msg.message}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="py-8">
+                <CardContent className="text-center">
+                  <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">No contact messages yet. Be the first to send one!</p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
 
