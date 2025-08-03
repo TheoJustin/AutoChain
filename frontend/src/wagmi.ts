@@ -1,5 +1,5 @@
 import { http, cookieStorage, createConfig, createStorage } from "wagmi";
-import { mainnet, sepolia } from "wagmi/chains";
+import { liskSepolia, mainnet, sepolia } from "wagmi/chains";
 import { coinbaseWallet, injected, walletConnect } from "wagmi/connectors";
 
 // Ganache local network
@@ -19,23 +19,17 @@ import { coinbaseWallet, injected, walletConnect } from "wagmi/connectors";
 // } as const;
 
 export function getConfig() {
+  const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID ?? "";
   const connectors = [
     injected(),
     coinbaseWallet(),
+    walletConnect({
+      projectId,
+    })
   ];
 
-  // Only add WalletConnect on client side
-  if (typeof window !== 'undefined') {
-    const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID ?? "";
-    connectors.push(
-      walletConnect({
-        projectId,
-      })
-    );
-  }
-
   return createConfig({
-    chains: [mainnet, sepolia],
+    chains: [mainnet, liskSepolia],
     connectors,
     storage: createStorage({
       storage: cookieStorage,
@@ -43,7 +37,7 @@ export function getConfig() {
     ssr: true,
     transports: {
       [mainnet.id]: http(),
-      [sepolia.id]: http("https://rpc.sepolia-api.lisk.com"),
+      [liskSepolia.id]: http(),
     },
   });
 }
