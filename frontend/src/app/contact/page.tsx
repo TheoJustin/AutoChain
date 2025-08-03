@@ -15,10 +15,7 @@ import { CONTACT_OBJECTS_ADDRESS, CONTACT_OBJECTS_ABI } from "@/contracts/Contac
 interface ContactMessage {
   contactId: bigint
   firstName: string
-  lastName: string
   email: string
-  phone: string
-  subject: string
   message: string
   timestamp: bigint
 }
@@ -26,10 +23,7 @@ interface ContactMessage {
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     firstName: "",
-    lastName: "",
     email: "",
-    phone: "",
-    subject: "",
     message: ""
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -37,20 +31,85 @@ export default function ContactPage() {
   const { address } = useAccount()
   const { writeContract } = useWriteContract()
   
-  const { data: totalMessages, error: totalError } = useReadContract({
+  const { data: totalMessages, error: totalError, refetch: refetchTotal } = useReadContract({
     address: CONTACT_OBJECTS_ADDRESS,
     abi: CONTACT_OBJECTS_ABI,
-    functionName: "getContactMessagesCount",
+    functionName: "totalMessages",
   })
   
-  const { data: messages, refetch, isLoading: messagesLoading, error: messagesError } = useReadContract({
-    address: CONTACT_OBJECTS_ADDRESS,
-    abi: CONTACT_OBJECTS_ABI,
-    functionName: "getAllContactMessages",
-    query: {
-      enabled: !!totalMessages && Number(totalMessages) > 0
+  const [messages, setMessages] = useState<ContactMessage[]>([])
+  const [messagesLoading, setMessagesLoading] = useState(false)
+  const [messagesError, setMessagesError] = useState<any>(null)
+  
+  const fetchMessages = async () => {
+    if (!totalMessages || Number(totalMessages) === 0) {
+      setMessages([])
+      return
     }
-  }) as { data: ContactMessage[] | undefined, refetch: () => void, isLoading: boolean, error: any }
+    
+    setMessagesLoading(true)
+    setMessagesError(null)
+    
+    try {
+      const messagePromises = []
+      for (let i = 1; i <= Number(totalMessages); i++) {
+        messagePromises.push(
+          fetch('http://127.0.0.1:8545', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'eth_call',
+              params: [{
+                to: CONTACT_OBJECTS_ADDRESS,
+                data: `0x7b8c1250${i.toString(16).padStart(64, '0')}`
+              }, 'latest'],
+              id: i
+            })
+          }).then(res => res.json())
+        )
+      }
+      
+      const results = await Promise.all(messagePromises)
+      const fetchedMessages: ContactMessage[] = results.map((result, index) => {
+        if (result.result) {
+          const decoded = result.result.slice(2)
+          const contactId = BigInt('0x' + decoded.slice(0, 64))
+          const firstNameOffset = parseInt(decoded.slice(64, 128), 16) * 2
+          const emailOffset = parseInt(decoded.slice(128, 192), 16) * 2
+          const messageOffset = parseInt(decoded.slice(192, 256), 16) * 2
+          const timestamp = BigInt('0x' + decoded.slice(256, 320))
+          
+          const firstNameLength = parseInt(decoded.slice(firstNameOffset, firstNameOffset + 64), 16) * 2
+          const firstName = Buffer.from(decoded.slice(firstNameOffset + 64, firstNameOffset + 64 + firstNameLength), 'hex').toString('utf8')
+          
+          const emailLength = parseInt(decoded.slice(emailOffset, emailOffset + 64), 16) * 2
+          const email = Buffer.from(decoded.slice(emailOffset + 64, emailOffset + 64 + emailLength), 'hex').toString('utf8')
+          
+          const messageLength = parseInt(decoded.slice(messageOffset, messageOffset + 64), 16) * 2
+          const message = Buffer.from(decoded.slice(messageOffset + 64, messageOffset + 64 + messageLength), 'hex').toString('utf8')
+          
+          return { contactId, firstName, email, message, timestamp }
+        }
+        return null
+      }).filter(Boolean) as ContactMessage[]
+      
+      setMessages(fetchedMessages)
+    } catch (error) {
+      setMessagesError(error)
+    } finally {
+      setMessagesLoading(false)
+    }
+  }
+  
+  useEffect(() => {
+    fetchMessages()
+  }, [totalMessages])
+  
+  const refetch = () => {
+    refetchTotal()
+    fetchMessages()
+  }
   
   // Debug logging
   useEffect(() => {
@@ -70,7 +129,7 @@ export default function ContactPage() {
       return
     }
     
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.subject || !formData.message) {
+    if (!formData.firstName || !formData.email || !formData.message) {
       alert("Please fill in all required fields")
       return
     }
@@ -78,32 +137,21 @@ export default function ContactPage() {
     setIsSubmitting(true)
     
     try {
-      const nextId = totalMessages ? Number(totalMessages) + 1 : 1
-      const timestamp = Math.floor(Date.now() / 1000)
-      
       await writeContract({
         address: CONTACT_OBJECTS_ADDRESS,
         abi: CONTACT_OBJECTS_ABI,
-        functionName: "createContactMessageObjects",
+        functionName: "createContactMessage",
         args: [
-          BigInt(nextId),
           formData.firstName,
-          formData.lastName,
           formData.email,
-          formData.phone || "",
-          formData.subject,
-          formData.message,
-          BigInt(timestamp)
+          formData.message
         ]
       })
       
       // Reset form
       setFormData({
         firstName: "",
-        lastName: "",
         email: "",
-        phone: "",
-        subject: "",
         message: ""
       })
       
@@ -142,27 +190,15 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <form onSubmit={handleSubmit}>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input 
-                        id="firstName" 
-                        placeholder="John" 
-                        value={formData.firstName}
-                        onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input 
-                        id="lastName" 
-                        placeholder="Doe" 
-                        value={formData.lastName}
-                        onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                        required
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input 
+                      id="firstName" 
+                      placeholder="John" 
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                      required
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -175,34 +211,6 @@ export default function ContactPage() {
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
                       required
                     />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number (Optional)</Label>
-                    <Input 
-                      id="phone" 
-                      type="tel" 
-                      placeholder="+1 (555) 123-4567" 
-                      value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Subject</Label>
-                    <Select value={formData.subject} onValueChange={(value) => setFormData({...formData, subject: value})}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a topic" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="rental">Rental Support</SelectItem>
-                        <SelectItem value="listing">Car Listing Help</SelectItem>
-                        <SelectItem value="wallet">Wallet & Payments</SelectItem>
-                        <SelectItem value="technical">Technical Issues</SelectItem>
-                        <SelectItem value="account">Account Management</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
 
                   <div className="space-y-2">
@@ -375,7 +383,7 @@ export default function ContactPage() {
         {/* Contact Messages Section */}
         <div className="mt-16">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-800">Recent Contact Messages</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Contact Messages</h2>
             <Button onClick={() => refetch()} variant="outline" size="sm">
               Refresh Messages
             </Button>
@@ -406,10 +414,9 @@ export default function ContactPage() {
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <h3 className="font-semibold text-gray-800">
-                            {msg.firstName} {msg.lastName}
+                            {msg.firstName}
                           </h3>
                           <p className="text-sm text-gray-600">{msg.email}</p>
-                          {msg.phone && <p className="text-sm text-gray-600">{msg.phone}</p>}
                         </div>
                         <div className="text-right">
                           <p className="text-sm text-gray-500">
@@ -420,11 +427,7 @@ export default function ContactPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="mb-2">
-                        <span className="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
-                          {msg.subject}
-                        </span>
-                      </div>
+
                       <p className="text-gray-700">{msg.message}</p>
                     </CardContent>
                   </Card>
@@ -434,7 +437,7 @@ export default function ContactPage() {
               <Card className="py-8">
                 <CardContent className="text-center">
                   <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No contact messages yet. Be the first to send one!</p>
+                  <p className="text-gray-600">Sending this message will go throgh the contract</p>
                   <p className="text-sm text-gray-500 mt-2">Total messages in contract: {totalMessages?.toString() || '0'}</p>
                 </CardContent>
               </Card>
