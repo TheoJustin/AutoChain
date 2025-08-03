@@ -1,6 +1,6 @@
 import { http, cookieStorage, createConfig, createStorage } from "wagmi";
 import { liskSepolia, mainnet, sepolia } from "wagmi/chains";
-import { coinbaseWallet, injected, walletConnect } from "wagmi/connectors";
+import { coinbaseWallet, injected, metaMask, walletConnect } from "wagmi/connectors";
 
 // Ganache local network
 // const ganache = {
@@ -19,13 +19,9 @@ import { coinbaseWallet, injected, walletConnect } from "wagmi/connectors";
 // } as const;
 
 export function getConfig() {
-  const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID ?? "";
   const connectors = [
     injected(),
-    coinbaseWallet(),
-    walletConnect({
-      projectId,
-    })
+    metaMask(),
   ];
 
   return createConfig({
