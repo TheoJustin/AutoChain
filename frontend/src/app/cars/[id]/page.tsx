@@ -273,8 +273,11 @@ export default function CarDetailPage() {
                 {carDetails.images.slice(1).map((image, index) => (
                   <Image
                     key={index}
-                    src={imgLink || "/placeholder.svg"}
+                    src={`/images/${params.id}.jpg`}
                     alt={`${carDetails.name} view ${index + 2}`}
+                    width={100}
+                    height={100}
+                    unoptimized
                     className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
                   />
                 ))}

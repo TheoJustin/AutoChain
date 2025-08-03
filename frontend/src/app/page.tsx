@@ -8,6 +8,7 @@ import AIFeatures from "@/components/landing/features";
 import MainFeatures from "@/components/landing/mainfeatures";
 import CTA from "@/components/landing/cta";
 import Stats from "@/components/landing/stats";
+import Steps from "@/components/landing/steps";
 
 function App() {
   const account = useAccount();
@@ -22,6 +23,7 @@ function App() {
     <>
       <main>
         <Hero />
+        <Steps />
         <AIFeatures />
         <MainFeatures />
         <Stats />
