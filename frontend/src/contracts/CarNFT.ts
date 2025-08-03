@@ -1,4 +1,4 @@
-export const CAR_NFT_ADDRESS = `0x${process.env.NEXT_PUBLIC_CAR_NFT_ADDRESS ?? "5733853E5471f4522e370F10dD8Ec438DF07b806"}`;
+export const CAR_NFT_ADDRESS: `0x${string}` = `0x${process.env.NEXT_PUBLIC_CAR_NFT_ADDRESS ?? "5733853E5471f4522e370F10dD8Ec438DF07b806"}`;
 
 export const CAR_NFT_ABI = [
   {
