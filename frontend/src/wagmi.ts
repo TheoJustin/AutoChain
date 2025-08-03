@@ -1,6 +1,6 @@
-import { http, cookieStorage, createConfig, createStorage } from "wagmi";
-import { liskSepolia, mainnet, sepolia } from "wagmi/chains";
-import { coinbaseWallet, injected, metaMask, walletConnect } from "wagmi/connectors";
+import { cookieStorage, createConfig, createStorage, http } from "wagmi";
+import { liskSepolia } from "wagmi/chains";
+import { injected, metaMask } from "wagmi/connectors";
 
 // Ganache local network
 // const ganache = {

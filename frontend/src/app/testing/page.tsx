@@ -32,7 +32,7 @@ export default function Home() {
     formData.append('image', file);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_AI_URL ?? "http://localhost:5000"}/predict`, {
+      const response = await fetch(`https://llalalex.pythonanywhere.com/api/predict`, {
         method: 'POST',
         body: formData,
       });
