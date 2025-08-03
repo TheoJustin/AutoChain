@@ -270,6 +270,7 @@ export default function CarsPage() {
                       className="w-full h-48 object-cover rounded-t-lg"
                       width={100}
                       height={100}
+                      unoptimized
                     />
                     <Badge className="absolute top-3 left-3 bg-orange-500 text-white">
                       🤖 AI Recommended

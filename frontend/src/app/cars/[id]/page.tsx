@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Car,
   MapPin,
@@ -28,122 +28,122 @@ import Image from "next/image";
 import { getRecommendationsById } from "@/services/car.service";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { RentCarModal } from '@/components/RentCarModal';
-import { useCarMetadata, useCarPrice } from '@/hooks/useCarNFT';
-import { useMintedCars } from '@/hooks/useMintedCars';
-import { useAccount } from 'wagmi';
-import { formatEther } from 'viem';
-import { cars } from '@/data/cars';
+import { RentCarModal } from "@/components/RentCarModal";
+import { useCarMetadata, useCarPrice } from "@/hooks/useCarNFT";
+import { useMintedCars } from "@/hooks/useMintedCars";
+import { useAccount } from "wagmi";
+import { formatEther } from "viem";
+import { cars } from "@/data/cars";
 
 const carDetails = {
   id: 1,
-  name: 'Tesla Model 3',
-  manufacturer: 'Tesla',
-  model: 'Model 3',
+  name: "Tesla Model 3",
+  manufacturer: "Tesla",
+  model: "Model 3",
   year: 2023,
-  type: 'Sedan',
-  fuel: 'Electric',
-  transmission: 'Automatic',
-  drive: 'RWD',
-  condition: 'Excellent',
-  paintColor: 'Pearl White',
+  type: "Sedan",
+  fuel: "Electric",
+  transmission: "Automatic",
+  drive: "RWD",
+  condition: "Excellent",
+  paintColor: "Pearl White",
   price: 89,
   rating: 4.9,
   reviews: 127,
-  location: 'Downtown',
+  location: "Downtown",
   images: [
-    '/placeholder.svg?height=400&width=600',
-    '/placeholder.svg?height=400&width=600',
-    '/placeholder.svg?height=400&width=600',
-    '/placeholder.svg?height=400&width=600',
+    "/placeholder.svg?height=400&width=600",
+    "/placeholder.svg?height=400&width=600",
+    "/placeholder.svg?height=400&width=600",
+    "/placeholder.svg?height=400&width=600",
   ],
   features: [
-    'Autopilot',
-    'Supercharging',
-    'Premium Interior',
-    'Glass Roof',
-    'Mobile Connector',
-    'Over-the-Air Updates',
+    "Autopilot",
+    "Supercharging",
+    "Premium Interior",
+    "Glass Roof",
+    "Mobile Connector",
+    "Over-the-Air Updates",
   ],
   specifications: {
-    range: '358 miles',
-    acceleration: '5.8s 0-60 mph',
-    topSpeed: '140 mph',
-    seating: '5 passengers',
-    cargo: '15 cu ft',
-    charging: 'Supercharger Compatible',
+    range: "358 miles",
+    acceleration: "5.8s 0-60 mph",
+    topSpeed: "140 mph",
+    seating: "5 passengers",
+    cargo: "15 cu ft",
+    charging: "Supercharger Compatible",
   },
   owner: {
-    name: 'Sarah Johnson',
+    name: "Sarah Johnson",
     rating: 4.8,
     reviews: 45,
-    joinDate: '2022',
-    avatar: '/placeholder.svg?height=40&width=40',
+    joinDate: "2022",
+    avatar: "/placeholder.svg?height=40&width=40",
   },
   description:
-    'Experience the future of driving with this pristine Tesla Model 3. This vehicle combines cutting-edge technology with exceptional performance and efficiency. Perfect for city commuting or weekend getaways.',
+    "Experience the future of driving with this pristine Tesla Model 3. This vehicle combines cutting-edge technology with exceptional performance and efficiency. Perfect for city commuting or weekend getaways.",
   rules: [
-    'No smoking',
-    'No pets',
-    'Return with same fuel level',
-    'Maximum 200 miles per day',
+    "No smoking",
+    "No pets",
+    "Return with same fuel level",
+    "Maximum 200 miles per day",
   ],
 };
 
 const similarCars = [
   {
     id: 2,
-    name: 'Tesla Model Y',
+    name: "Tesla Model Y",
     year: 2023,
     price: 105,
     rating: 4.8,
-    image: '/placeholder.svg?height=150&width=200',
+    image: "/placeholder.svg?height=150&width=200",
   },
   {
     id: 3,
-    name: 'BMW i4',
+    name: "BMW i4",
     year: 2022,
     price: 95,
     rating: 4.7,
-    image: '/placeholder.svg?height=150&width=200',
+    image: "/placeholder.svg?height=150&width=200",
   },
   {
     id: 4,
-    name: 'Polestar 2',
+    name: "Polestar 2",
     year: 2023,
     price: 85,
     rating: 4.6,
-    image: '/placeholder.svg?height=150&width=200',
+    image: "/placeholder.svg?height=150&width=200",
   },
 ];
 
 const reviews = [
   {
     id: 1,
-    user: 'Mike Chen',
+    user: "Mike Chen",
     rating: 5,
-    date: '2 days ago',
+    date: "2 days ago",
     comment:
-      'Amazing car! The autopilot feature made my road trip so much more enjoyable. Sarah was very responsive and the car was spotless.',
-    avatar: '/placeholder.svg?height=32&width=32',
+      "Amazing car! The autopilot feature made my road trip so much more enjoyable. Sarah was very responsive and the car was spotless.",
+    avatar: "/placeholder.svg?height=32&width=32",
   },
   {
     id: 2,
-    user: 'Emily Rodriguez',
+    user: "Emily Rodriguez",
     rating: 5,
-    date: '1 week ago',
+    date: "1 week ago",
     comment:
-      'Perfect for my business trip. The car was exactly as described and the charging was convenient. Highly recommend!',
-    avatar: '/placeholder.svg?height=32&width=32',
+      "Perfect for my business trip. The car was exactly as described and the charging was convenient. Highly recommend!",
+    avatar: "/placeholder.svg?height=32&width=32",
   },
   {
     id: 3,
-    user: 'David Kim',
+    user: "David Kim",
     rating: 4,
-    date: '2 weeks ago',
+    date: "2 weeks ago",
     comment:
-      'Great experience overall. The car drives smoothly and the tech features are impressive. Will definitely rent again.',
-    avatar: '/placeholder.svg?height=32&width=32',
+      "Great experience overall. The car drives smoothly and the tech features are impressive. Will definitely rent again.",
+    avatar: "/placeholder.svg?height=32&width=32",
   },
 ];
 
@@ -174,7 +174,7 @@ export default function CarDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { isConnected } = useAccount();
-  const carId = parseInt(params?.id || '0');
+  const carId = parseInt(params?.id || "0");
   const { data: carMetadata } = useCarMetadata(carId);
   const { data: pricePerDay } = useCarPrice(carId);
 
@@ -244,6 +244,7 @@ export default function CarDetailPage() {
                   className="w-full h-96 object-cover rounded-xl"
                   width={100}
                   height={100}
+                  unoptimized
                 />
                 <div className="absolute top-4 left-4">
                   <Badge className="bg-orange-500 text-white">
@@ -299,7 +300,9 @@ export default function CarDetailPage() {
                 </div>
                 <div className="text-right">
                   <div className="text-3xl font-bold text-orange-500">
-                    {pricePerDay ? `${formatEther(BigInt(pricePerDay))} ETH` : `$${carDetails.price}`}
+                    {pricePerDay
+                      ? `${formatEther(BigInt(pricePerDay))} ETH`
+                      : `$${carDetails.price}`}
                   </div>
                   <div className="text-gray-500">per day</div>
                 </div>
@@ -532,7 +535,9 @@ export default function CarDetailPage() {
 
                   <RentCarModal carId={carId} carName={carDetails.name}>
                     <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-                      {isConnected ? 'Rent with Crypto' : 'Connect Wallet to Rent'}
+                      {isConnected
+                        ? "Rent with Crypto"
+                        : "Connect Wallet to Rent"}
                     </Button>
                   </RentCarModal>
 
@@ -561,6 +566,7 @@ export default function CarDetailPage() {
                           className="w-16 h-12 object-cover rounded"
                           width={100}
                           height={100}
+                          unoptimized
                         />
                         <div className="flex-1">
                           <h4 className="font-medium text-gray-800">
