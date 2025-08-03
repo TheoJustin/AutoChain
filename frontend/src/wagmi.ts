@@ -3,20 +3,20 @@ import { mainnet, sepolia } from "wagmi/chains";
 import { coinbaseWallet, injected, walletConnect } from "wagmi/connectors";
 
 // Ganache local network
-const ganache = {
-  id: 1337,
-  name: 'Ganache',
-  nativeCurrency: {
-    decimals: 18,
-    name: 'Ether',
-    symbol: 'ETH',
-  },
-  rpcUrls: {
-    default: {
-      http: ['http://127.0.0.1:8545'],
-    },
-  },
-} as const;
+// const ganache = {
+//   id: 1337,
+//   name: 'Ganache',
+//   nativeCurrency: {
+//     decimals: 18,
+//     name: 'Ether',
+//     symbol: 'ETH',
+//   },
+//   rpcUrls: {
+//     default: {
+//       http: ['http://127.0.0.1:8545'],
+//     },
+//   },
+// } as const;
 
 export function getConfig() {
   const connectors = [
@@ -26,22 +26,24 @@ export function getConfig() {
 
   // Only add WalletConnect on client side
   if (typeof window !== 'undefined') {
+    const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID ?? "";
     connectors.push(
-      walletConnect({ projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID ?? "" })
+      walletConnect({
+        projectId,
+      })
     );
   }
 
   return createConfig({
-    chains: [ganache, mainnet, sepolia],
+    chains: [mainnet, sepolia],
     connectors,
     storage: createStorage({
       storage: cookieStorage,
     }),
     ssr: true,
     transports: {
-      [ganache.id]: http('http://127.0.0.1:8545'),
       [mainnet.id]: http(),
-      [sepolia.id]: http(),
+      [sepolia.id]: http("https://rpc.sepolia-api.lisk.com"),
     },
   });
 }

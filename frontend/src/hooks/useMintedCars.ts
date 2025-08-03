@@ -64,7 +64,7 @@ export function useMintedCars() {
       rating: 5.0,
       reviews: 0,
       location: 'Your Garage',
-      image: imgLink,
+      image: imgLink.src,
       features: ['NFT Verified', 'Blockchain Owned', 'Smart Contract'],
       tokenId: carData.tokenId,
       mintedAt: new Date()
@@ -72,7 +72,7 @@ export function useMintedCars() {
 
     const updatedCars = [newCar, ...mintedCars];
     setMintedCars(updatedCars);
-    
+
     // Save to localStorage
     localStorage.setItem(`mintedCars_${address}`, JSON.stringify(updatedCars));
   };

@@ -32,7 +32,7 @@ export default function Home() {
     formData.append('image', file);
 
     try {
-      const response = await fetch('http://localhost:5000/predict', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_AI_URL ?? "http://localhost:5000"}/predict`, {
         method: 'POST',
         body: formData,
       });
@@ -62,7 +62,7 @@ export default function Home() {
           <ul>
             {detections.map((det, index) => (
               <li key={index}>
-                Class: {det.class}, Confidence: {det.confidence.toFixed(2)}, 
+                Class: {det.class}, Confidence: {det.confidence.toFixed(2)},
                 BBox: [{det.bbox.join(', ')}]
               </li>
             ))}

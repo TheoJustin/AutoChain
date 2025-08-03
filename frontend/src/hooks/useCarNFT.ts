@@ -8,7 +8,7 @@ export function useCarNFT() {
   const [lastMintedTokenId, setLastMintedTokenId] = useState<number | null>(null);
 
   const mintCar = async (
-    to: string,
+    to: `0x${string}`,
     manufacturer: string,
     carType: string,
     fuelType: string,
@@ -23,12 +23,12 @@ export function useCarNFT() {
         functionName: 'mint',
         args: [to, manufacturer, carType, fuelType, transmission, image, BigInt(year)]
       });
-      
+
       // In a real implementation, you'd need to listen for the mint event to get the tokenId
       // For now, we'll increment a counter (this is not ideal for production)
       const estimatedTokenId = Date.now() % 10000; // Simple estimation
       setLastMintedTokenId(estimatedTokenId);
-      
+
       return { hash: result, tokenId: estimatedTokenId };
     } catch (error) {
       console.error('Minting failed:', error);
