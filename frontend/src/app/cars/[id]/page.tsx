@@ -556,7 +556,7 @@ export default function CarDetailPage() {
                     Similar AI Recommendations
                   </CardTitle>
                   <CardDescription>
-                    Based on this car's features
+                    Based on this car&apos;s features
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">

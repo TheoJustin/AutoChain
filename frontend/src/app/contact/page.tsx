@@ -8,17 +8,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Car, Mail, Phone, MapPin, Clock, MessageSquare, HelpCircle, Shield, Loader2 } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useWriteContract, useReadContract, useAccount } from "wagmi"
 import { CONTACT_OBJECTS_ADDRESS, CONTACT_OBJECTS_ABI } from "@/contracts/ContactObjects"
 
 interface ContactMessage {
   contactId: bigint
   firstName: string
-  lastName: string
   email: string
-  phone: string
-  subject: string
   message: string
   timestamp: bigint
 }
@@ -26,32 +23,94 @@ interface ContactMessage {
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     firstName: "",
-    lastName: "",
     email: "",
-    phone: "",
-    subject: "",
     message: ""
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
+
   const { address } = useAccount()
   const { writeContract } = useWriteContract()
-  
-  const { data: totalMessages, error: totalError } = useReadContract({
+
+  const { data: totalMessages, error: totalError, refetch: refetchTotal } = useReadContract({
     address: CONTACT_OBJECTS_ADDRESS,
     abi: CONTACT_OBJECTS_ABI,
-    functionName: "getContactMessagesCount",
+    functionName: "totalMessages",
   })
-  
-  const { data: messages, refetch, isLoading: messagesLoading, error: messagesError } = useReadContract({
-    address: CONTACT_OBJECTS_ADDRESS,
-    abi: CONTACT_OBJECTS_ABI,
-    functionName: "getAllContactMessages",
-    query: {
-      enabled: !!totalMessages && Number(totalMessages) > 0
+
+  const [messages, setMessages] = useState<ContactMessage[]>([])
+  const [messagesLoading, setMessagesLoading] = useState(false)
+  const [messagesError, setMessagesError] = useState<any>(null)
+
+  const fetchMessages = useCallback(async () => {
+    if (!totalMessages || Number(totalMessages) === 0) {
+      setMessages([])
+      return
     }
-  }) as { data: ContactMessage[] | undefined, refetch: () => void, isLoading: boolean, error: any }
-  
+
+    setMessagesLoading(true)
+    setMessagesError(null)
+
+    try {
+      const messagePromises = []
+      for (let i = 1; i <= Number(totalMessages); i++) {
+        messagePromises.push(
+          fetch('http://127.0.0.1:8545', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'eth_call',
+              params: [{
+                to: CONTACT_OBJECTS_ADDRESS,
+                data: `0x7b8c1250${i.toString(16).padStart(64, '0')}`
+              }, 'latest'],
+              id: i
+            })
+          }).then(res => res.json())
+        )
+      }
+
+      const results = await Promise.all(messagePromises)
+      const fetchedMessages: ContactMessage[] = results.map((result, index) => {
+        if (result.result) {
+          const decoded = result.result.slice(2)
+          const contactId = BigInt('0x' + decoded.slice(0, 64))
+          const firstNameOffset = parseInt(decoded.slice(64, 128), 16) * 2
+          const emailOffset = parseInt(decoded.slice(128, 192), 16) * 2
+          const messageOffset = parseInt(decoded.slice(192, 256), 16) * 2
+          const timestamp = BigInt('0x' + decoded.slice(256, 320))
+
+          const firstNameLength = parseInt(decoded.slice(firstNameOffset, firstNameOffset + 64), 16) * 2
+          const firstName = Buffer.from(decoded.slice(firstNameOffset + 64, firstNameOffset + 64 + firstNameLength), 'hex').toString('utf8')
+
+          const emailLength = parseInt(decoded.slice(emailOffset, emailOffset + 64), 16) * 2
+          const email = Buffer.from(decoded.slice(emailOffset + 64, emailOffset + 64 + emailLength), 'hex').toString('utf8')
+
+          const messageLength = parseInt(decoded.slice(messageOffset, messageOffset + 64), 16) * 2
+          const message = Buffer.from(decoded.slice(messageOffset + 64, messageOffset + 64 + messageLength), 'hex').toString('utf8')
+
+          return { contactId, firstName, email, message, timestamp }
+        }
+        return null
+      }).filter(Boolean) as ContactMessage[]
+
+      setMessages(fetchedMessages)
+    } catch (error) {
+      setMessagesError(error)
+    } finally {
+      setMessagesLoading(false)
+    }
+  }, [totalMessages]);
+
+  useEffect(() => {
+    fetchMessages()
+  }, [totalMessages, fetchMessages])
+
+  const refetch = () => {
+    refetchTotal()
+    fetchMessages()
+  }
+
   // Debug logging
   useEffect(() => {
     console.log('Contract Address:', CONTACT_OBJECTS_ADDRESS)
@@ -62,58 +121,47 @@ export default function ContactPage() {
     console.log('Messages error:', messagesError)
     console.log('Connected address:', address)
   }, [messages, totalMessages, totalError, messagesLoading, messagesError, address])
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!address) {
       alert("Please connect your wallet first")
       return
     }
-    
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.subject || !formData.message) {
+
+    if (!formData.firstName || !formData.email || !formData.message) {
       alert("Please fill in all required fields")
       return
     }
-    
+
     setIsSubmitting(true)
-    
+
     try {
-      const nextId = totalMessages ? Number(totalMessages) + 1 : 1
-      const timestamp = Math.floor(Date.now() / 1000)
-      
       await writeContract({
         address: CONTACT_OBJECTS_ADDRESS,
         abi: CONTACT_OBJECTS_ABI,
-        functionName: "createContactMessageObjects",
+        functionName: "createContactMessage",
         args: [
-          BigInt(nextId),
           formData.firstName,
-          formData.lastName,
           formData.email,
-          formData.phone || "",
-          formData.subject,
-          formData.message,
-          BigInt(timestamp)
+          formData.message
         ]
       })
-      
+
       // Reset form
       setFormData({
         firstName: "",
-        lastName: "",
         email: "",
-        phone: "",
-        subject: "",
         message: ""
       })
-      
+
       // Refetch messages after a short delay
       setTimeout(() => {
         refetch()
       }, 3000)
-      
+
       alert("Message submitted successfully!")
-      
+
     } catch (error) {
       console.error("Error submitting message:", error)
       alert("Failed to submit message. Please try again.")
@@ -128,7 +176,7 @@ export default function ContactPage() {
         <div className="text-center mb-12">
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">Get in Touch</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Have questions about AutoChain? We're here to help you with rentals, listings, or technical support.
+            Have questions about AutoChain? We&apos;re here to help you with rentals, listings, or technical support.
           </p>
         </div>
 
@@ -138,71 +186,31 @@ export default function ContactPage() {
             <Card className="py-5">
               <CardHeader>
                 <CardTitle className="text-gray-800">Send us a Message</CardTitle>
-                <CardDescription>Fill out the form below and we'll get back to you within 24 hours.</CardDescription>
+                <CardDescription>Fill out the form below and we&apos;ll get back to you within 24 hours.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <form onSubmit={handleSubmit}>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input 
-                        id="firstName" 
-                        placeholder="John" 
-                        value={formData.firstName}
-                        onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input 
-                        id="lastName" 
-                        placeholder="Doe" 
-                        value={formData.lastName}
-                        onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                        required
-                      />
-                    </div>
-                  </div>
-
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input 
-                      id="email" 
-                      type="email" 
-                      placeholder="john@example.com" 
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      placeholder="John"
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number (Optional)</Label>
-                    <Input 
-                      id="phone" 
-                      type="tel" 
-                      placeholder="+1 (555) 123-4567" 
-                      value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="john@example.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      required
                     />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Subject</Label>
-                    <Select value={formData.subject} onValueChange={(value) => setFormData({...formData, subject: value})}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a topic" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="rental">Rental Support</SelectItem>
-                        <SelectItem value="listing">Car Listing Help</SelectItem>
-                        <SelectItem value="wallet">Wallet & Payments</SelectItem>
-                        <SelectItem value="technical">Technical Issues</SelectItem>
-                        <SelectItem value="account">Account Management</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
 
                   <div className="space-y-2">
@@ -212,14 +220,14 @@ export default function ContactPage() {
                       placeholder="Please describe your question or issue in detail..."
                       className="min-h-32"
                       value={formData.message}
-                      onChange={(e) => setFormData({...formData, message: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       required
                     />
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white" 
+                  <Button
+                    type="submit"
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white"
                     disabled={isSubmitting || !address}
                   >
                     {isSubmitting ? (
@@ -231,7 +239,7 @@ export default function ContactPage() {
                       "Send Message"
                     )}
                   </Button>
-                  
+
                   {!address && (
                     <p className="text-sm text-red-600 text-center mt-2">
                       Please connect your wallet to submit a message
@@ -375,7 +383,7 @@ export default function ContactPage() {
         {/* Contact Messages Section */}
         <div className="mt-16">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-800">Recent Contact Messages</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Contact Messages</h2>
             <Button onClick={() => refetch()} variant="outline" size="sm">
               Refresh Messages
             </Button>
@@ -406,10 +414,9 @@ export default function ContactPage() {
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <h3 className="font-semibold text-gray-800">
-                            {msg.firstName} {msg.lastName}
+                            {msg.firstName}
                           </h3>
                           <p className="text-sm text-gray-600">{msg.email}</p>
-                          {msg.phone && <p className="text-sm text-gray-600">{msg.phone}</p>}
                         </div>
                         <div className="text-right">
                           <p className="text-sm text-gray-500">
@@ -420,11 +427,7 @@ export default function ContactPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="mb-2">
-                        <span className="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
-                          {msg.subject}
-                        </span>
-                      </div>
+
                       <p className="text-gray-700">{msg.message}</p>
                     </CardContent>
                   </Card>
@@ -434,7 +437,7 @@ export default function ContactPage() {
               <Card className="py-8">
                 <CardContent className="text-center">
                   <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No contact messages yet. Be the first to send one!</p>
+                  <p className="text-gray-600">Sending this message will go throgh the contract</p>
                   <p className="text-sm text-gray-500 mt-2">Total messages in contract: {totalMessages?.toString() || '0'}</p>
                 </CardContent>
               </Card>
@@ -464,7 +467,7 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  Click "List Your Car", upload photos (our AI will verify they're cars), set your price and
+                  Click &quot;List Your Car&quot;, upload photos (our AI will verify they&apos;re cars), set your price and
                   availability, and start earning from rentals.
                 </p>
               </CardContent>

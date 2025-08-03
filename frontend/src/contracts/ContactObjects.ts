@@ -1,4 +1,4 @@
-export const CONTACT_OBJECTS_ADDRESS = '0xC9cc462B8e210B4Ec2129355254AE35634d3D4d6';
+export const CONTACT_OBJECTS_ADDRESS = process.env.NEXT_PUBLIC_CONTACT_OBJECTS_ADDRESSS ?? "0xC4dfeabFA0a0D89bA6132A05b018B72E9d654d60";
 
 export const CONTACT_OBJECTS_ABI = [
   {
@@ -12,48 +12,18 @@ export const CONTACT_OBJECTS_ABI = [
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "contactId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "email",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "timestamp",
+        "name": "id",
         "type": "uint256"
       }
     ],
-    "name": "ContactMessageCreated",
+    "name": "ContactCreated",
     "type": "event"
   },
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "contactMessageObjects",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "contactId",
-        "type": "uint256"
-      },
-      {
         "internalType": "string",
         "name": "firstName",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "lastName",
         "type": "string"
       },
       {
@@ -63,72 +33,11 @@ export const CONTACT_OBJECTS_ABI = [
       },
       {
         "internalType": "string",
-        "name": "phone",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "subject",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
         "name": "message",
         "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "timestamp",
-        "type": "uint256"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "firstName",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "lastName",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "email",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "phone",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "subject",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "message",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "createContactMessageObjects",
+    "name": "createContactMessage",
     "outputs": [
       {
         "internalType": "uint256",
@@ -140,125 +49,35 @@ export const CONTACT_OBJECTS_ABI = [
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getAllContactMessages",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "contactId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "firstName",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "lastName",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "email",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "phone",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "subject",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "message",
-            "type": "string"
-          },
-          {
-            "internalType": "uint256",
-            "name": "timestamp",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct ContactObjects.ContactMessage[]",
-        "name": "",
-        "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "index",
+        "name": "id",
         "type": "uint256"
       }
     ],
-    "name": "getContactMessage",
+    "name": "getMessageData",
     "outputs": [
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "contactId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "firstName",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "lastName",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "email",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "phone",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "subject",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "message",
-            "type": "string"
-          },
-          {
-            "internalType": "uint256",
-            "name": "timestamp",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct ContactObjects.ContactMessage",
+        "internalType": "uint256",
         "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getContactMessagesCount",
-    "outputs": [
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      },
       {
         "internalType": "uint256",
         "name": "",
@@ -271,6 +90,19 @@ export const CONTACT_OBJECTS_ABI = [
   {
     "inputs": [],
     "name": "totalContactMessageObjects",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalMessages",
     "outputs": [
       {
         "internalType": "uint256",

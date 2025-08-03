@@ -1,69 +1,59 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.24;
 
-contract ContactObjects{
-    struct ContactMessage { 
-        uint256 contactId; 
-        string firstName; 
-        string lastName; 
-        string email; 
-        string phone; 
-        string subject; 
-        string message; 
-        uint256 timestamp; 
+contract ContactObjects {
+    struct ContactMessage {
+        uint256 contactId;
+        string firstName;
+        string email;
+        string message;
+        uint256 timestamp;
     }
 
-    ContactMessage[] public contactMessageObjects;
-    uint256 public totalContactMessageObjects;
+    mapping(uint256 => ContactMessage) private messages;
+    uint256 public totalMessages;
 
-    event ContactMessageCreated(uint256 indexed contactId, string email, uint256 timestamp);
+    event ContactCreated(uint256 indexed id);
 
-    constructor(){
-        totalContactMessageObjects = 0;
-    }
-
-    function createContactMessageObjects(
-        uint256 id,
-        string memory firstName, 
-        string memory lastName, 
-        string memory email, 
-        string memory phone, 
-        string memory subject, 
-        string memory message, 
-        uint256 timestamp
-    ) public returns (uint256){
-        require(bytes(firstName).length > 0, "First name required");
+    function createContactMessage(
+        string memory firstName,
+        string memory email,
+        string memory message
+    ) external returns (uint256) {
+        require(bytes(firstName).length > 0, "Name required");
         require(bytes(email).length > 0, "Email required");
-        require(timestamp > 0, "Timestamp required");
-        
-        ContactMessage memory newObject = ContactMessage({
-            contactId: id, 
-            firstName: firstName, 
-            lastName: lastName, 
-            email: email, 
-            phone: phone, 
-            subject: subject, 
-            message: message, 
-            timestamp: timestamp
-        });
-        
-        contactMessageObjects.push(newObject);
-        totalContactMessageObjects++;
-        
-        emit ContactMessageCreated(id, email, timestamp);
-        return totalContactMessageObjects;
+        require(totalMessages < 50, "Max limit reached");
+
+        totalMessages++;
+        messages[totalMessages] = ContactMessage(
+            totalMessages,
+            firstName,
+            email,
+            message,
+            block.timestamp
+        );
+
+        emit ContactCreated(totalMessages);
+        return totalMessages;
     }
 
-    function getAllContactMessages() public view returns (ContactMessage[] memory){
-        return contactMessageObjects;
+    function getMessageData(uint256 id)
+        public
+        view
+        returns (uint256, string memory, string memory, string memory, uint256)
+    {
+        require(id > 0 && id <= totalMessages, "Invalid id");
+        ContactMessage memory msgObj = messages[id];
+        return (
+            msgObj.contactId,
+            msgObj.firstName,
+            msgObj.email,
+            msgObj.message,
+            msgObj.timestamp
+        );
     }
 
-    function getContactMessage(uint256 index) public view returns (ContactMessage memory){
-        require(index < contactMessageObjects.length, "Index out of bounds");
-        return contactMessageObjects[index];
-    }
-
-    function getContactMessagesCount() public view returns (uint256){
-        return contactMessageObjects.length;
+    function totalContactMessageObjects() external view returns (uint256) {
+        return totalMessages;
     }
 }
