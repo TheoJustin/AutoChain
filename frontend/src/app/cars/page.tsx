@@ -436,7 +436,7 @@ export default function CarsPage() {
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">
                   My Minted Cars
                 </h2>
-                <p className="text-gray-600">Cars you've minted as NFTs</p>
+                <p className="text-gray-600">Cars you&apos;ve minted as NFTs</p>
               </div>
               <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
                 NFT Collection

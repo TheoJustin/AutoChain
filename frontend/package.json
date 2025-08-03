@@ -46,7 +46,7 @@
     "shadcn-ui": "^0.9.5",
     "tailwind-merge": "^3.3.1",
     "viem": "^2.31.7",
-    "wagmi": "^2.15.6"
+    "wagmi": "^2.16.0"
   },
   "devDependencies": {
     "@types/node": "^20.12.10",
@@ -55,6 +55,8 @@
     "@wagmi/cli": "^2.3.1",
     "bufferutil": "^4.0.8",
     "encoding": "^0.1.13",
+    "eslint": "8.57.1",
+    "eslint-config-next": "15.4.5",
     "lokijs": "^1.5.12",
     "pino-pretty": "^10.3.1",
     "supports-color": "^9.4.0",

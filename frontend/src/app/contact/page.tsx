@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Car, Mail, Phone, MapPin, Clock, MessageSquare, HelpCircle, Shield, Loader2 } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useWriteContract, useReadContract, useAccount } from "wagmi"
 import { CONTACT_OBJECTS_ADDRESS, CONTACT_OBJECTS_ABI } from "@/contracts/ContactObjects"
 
@@ -27,29 +27,29 @@ export default function ContactPage() {
     message: ""
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
+
   const { address } = useAccount()
   const { writeContract } = useWriteContract()
-  
+
   const { data: totalMessages, error: totalError, refetch: refetchTotal } = useReadContract({
     address: CONTACT_OBJECTS_ADDRESS,
     abi: CONTACT_OBJECTS_ABI,
     functionName: "totalMessages",
   })
-  
+
   const [messages, setMessages] = useState<ContactMessage[]>([])
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [messagesError, setMessagesError] = useState<any>(null)
-  
-  const fetchMessages = async () => {
+
+  const fetchMessages = useCallback(async () => {
     if (!totalMessages || Number(totalMessages) === 0) {
       setMessages([])
       return
     }
-    
+
     setMessagesLoading(true)
     setMessagesError(null)
-    
+
     try {
       const messagePromises = []
       for (let i = 1; i <= Number(totalMessages); i++) {
@@ -69,7 +69,7 @@ export default function ContactPage() {
           }).then(res => res.json())
         )
       }
-      
+
       const results = await Promise.all(messagePromises)
       const fetchedMessages: ContactMessage[] = results.map((result, index) => {
         if (result.result) {
@@ -79,38 +79,38 @@ export default function ContactPage() {
           const emailOffset = parseInt(decoded.slice(128, 192), 16) * 2
           const messageOffset = parseInt(decoded.slice(192, 256), 16) * 2
           const timestamp = BigInt('0x' + decoded.slice(256, 320))
-          
+
           const firstNameLength = parseInt(decoded.slice(firstNameOffset, firstNameOffset + 64), 16) * 2
           const firstName = Buffer.from(decoded.slice(firstNameOffset + 64, firstNameOffset + 64 + firstNameLength), 'hex').toString('utf8')
-          
+
           const emailLength = parseInt(decoded.slice(emailOffset, emailOffset + 64), 16) * 2
           const email = Buffer.from(decoded.slice(emailOffset + 64, emailOffset + 64 + emailLength), 'hex').toString('utf8')
-          
+
           const messageLength = parseInt(decoded.slice(messageOffset, messageOffset + 64), 16) * 2
           const message = Buffer.from(decoded.slice(messageOffset + 64, messageOffset + 64 + messageLength), 'hex').toString('utf8')
-          
+
           return { contactId, firstName, email, message, timestamp }
         }
         return null
       }).filter(Boolean) as ContactMessage[]
-      
+
       setMessages(fetchedMessages)
     } catch (error) {
       setMessagesError(error)
     } finally {
       setMessagesLoading(false)
     }
-  }
-  
+  }, [totalMessages]);
+
   useEffect(() => {
     fetchMessages()
-  }, [totalMessages])
-  
+  }, [totalMessages, fetchMessages])
+
   const refetch = () => {
     refetchTotal()
     fetchMessages()
   }
-  
+
   // Debug logging
   useEffect(() => {
     console.log('Contract Address:', CONTACT_OBJECTS_ADDRESS)
@@ -121,21 +121,21 @@ export default function ContactPage() {
     console.log('Messages error:', messagesError)
     console.log('Connected address:', address)
   }, [messages, totalMessages, totalError, messagesLoading, messagesError, address])
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!address) {
       alert("Please connect your wallet first")
       return
     }
-    
+
     if (!formData.firstName || !formData.email || !formData.message) {
       alert("Please fill in all required fields")
       return
     }
-    
+
     setIsSubmitting(true)
-    
+
     try {
       await writeContract({
         address: CONTACT_OBJECTS_ADDRESS,
@@ -147,21 +147,21 @@ export default function ContactPage() {
           formData.message
         ]
       })
-      
+
       // Reset form
       setFormData({
         firstName: "",
         email: "",
         message: ""
       })
-      
+
       // Refetch messages after a short delay
       setTimeout(() => {
         refetch()
       }, 3000)
-      
+
       alert("Message submitted successfully!")
-      
+
     } catch (error) {
       console.error("Error submitting message:", error)
       alert("Failed to submit message. Please try again.")
@@ -176,7 +176,7 @@ export default function ContactPage() {
         <div className="text-center mb-12">
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">Get in Touch</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Have questions about AutoChain? We're here to help you with rentals, listings, or technical support.
+            Have questions about AutoChain? We&apos;re here to help you with rentals, listings, or technical support.
           </p>
         </div>
 
@@ -186,29 +186,29 @@ export default function ContactPage() {
             <Card className="py-5">
               <CardHeader>
                 <CardTitle className="text-gray-800">Send us a Message</CardTitle>
-                <CardDescription>Fill out the form below and we'll get back to you within 24 hours.</CardDescription>
+                <CardDescription>Fill out the form below and we&apos;ll get back to you within 24 hours.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <form onSubmit={handleSubmit}>
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First Name</Label>
-                    <Input 
-                      id="firstName" 
-                      placeholder="John" 
+                    <Input
+                      id="firstName"
+                      placeholder="John"
                       value={formData.firstName}
-                      onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input 
-                      id="email" 
-                      type="email" 
-                      placeholder="john@example.com" 
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="john@example.com"
                       value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       required
                     />
                   </div>
@@ -220,14 +220,14 @@ export default function ContactPage() {
                       placeholder="Please describe your question or issue in detail..."
                       className="min-h-32"
                       value={formData.message}
-                      onChange={(e) => setFormData({...formData, message: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       required
                     />
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white" 
+                  <Button
+                    type="submit"
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white"
                     disabled={isSubmitting || !address}
                   >
                     {isSubmitting ? (
@@ -239,7 +239,7 @@ export default function ContactPage() {
                       "Send Message"
                     )}
                   </Button>
-                  
+
                   {!address && (
                     <p className="text-sm text-red-600 text-center mt-2">
                       Please connect your wallet to submit a message
@@ -467,7 +467,7 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  Click "List Your Car", upload photos (our AI will verify they're cars), set your price and
+                  Click &quot;List Your Car&quot;, upload photos (our AI will verify they&apos;re cars), set your price and
                   availability, and start earning from rentals.
                 </p>
               </CardContent>
