@@ -1,6 +1,6 @@
 <p align="center">
    <a href="https://github.com/TheoJustin/AutoChain" target="_blank" rel="noopener noreferer">
-      <img width="150" src="./frontend/src/assets/autologo.png" alt="AutoChain Logo">
+      <img width="150" style="background-color: white; border-radius: 50%" src="./frontend/src/assets/autologo.png" alt="AutoChain Logo">
    </a>
 </p>
 <h1 style="border-bottom: none; margin-bottom: 0" align="center">AutoChain</h1>
