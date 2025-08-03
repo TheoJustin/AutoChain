@@ -48,7 +48,7 @@ export const getRecommendationsById = async (carId: number | string): Promise<Ca
 
 export const getRecommendationsByFeatures = async (features: RecommendationFeatures): Promise<Car[]> => {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_MODEL_API_URL}/recommend/by-features`, {
+    const response = await fetch(`https://llalalex.pythonanywhere.com/api/recommend/by-features`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
